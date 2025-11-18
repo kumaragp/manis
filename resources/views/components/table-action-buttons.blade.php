@@ -3,13 +3,14 @@
     'allowedActions' => [], 
     'editRoute' => null, 
     'deleteRoute' => null,
+    'idField' => 0
 ])
 
 <div class="flex space-x-2">
 
     {{-- Tombol Edit --}}
     @if($editRoute && in_array('edit', $allowedActions))
-        <a href="{{ route($editRoute, ['id' => $row['id']]) }}"
+        <a href="{{ route($editRoute, ['id' => $row[$idField]]) }}"
            class="inline-flex items-center space-x-2 bg-[#55A0FF] hover:bg-[#3B8FE0] 
                   text-[#0A3B65] font-bold px-6 py-2 rounded-full shadow-md 
                   transition duration-200">
@@ -20,7 +21,7 @@
 
     {{-- Tombol Hapus --}}
     @if($deleteRoute && in_array('delete', $allowedActions))
-        <form action="{{ route($deleteRoute, ['id' => $row['id']]) }}" 
+        <form action="{{ route($deleteRoute, ['id' => $row[$idField]]) }}" 
               method="POST"
               onsubmit="return confirm('Yakin ingin menghapus karyawan ini?')">
             @csrf

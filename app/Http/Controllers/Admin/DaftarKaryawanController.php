@@ -8,20 +8,17 @@ use App\Models\User; // pastikan modelnya benar
 
 class DaftarKaryawanController extends Controller
 {
-    // ============================
-    // HALAMAN TABEL KARYAWAN
-    // ============================
     public function index()
     {
         $karyawan = User::where('role', 'karyawan')->get();
 
         $rows = $karyawan->map(function ($item, $index) {
             return [
-                'no' => $index + 1,
-                'name' => $item->name,
-                'divisi' => $item->divisi ?? '-',
-                'waktu_terdaftar' => $item->created_at->format('d/m/Y H:i'),
-                'id' => $item->id, // selalu ada
+                $index + 1,
+                $item->name,
+                $item->divisi ?? '-',
+                $item->created_at->format('d/m/Y H:i'),
+                $item->id, // penting untuk edit/delete
             ];
         });
 
@@ -33,9 +30,6 @@ class DaftarKaryawanController extends Controller
         ]);
     }
 
-    // ============================
-    // FORM TAMBAH AKUN BARU
-    // ============================
     public function tambahAkun()
     {
         return view('layouts.admin.daftarKaryawan', [
@@ -43,9 +37,6 @@ class DaftarKaryawanController extends Controller
         ]);
     }
 
-    // ============================
-    // PROSES SIMPAN AKUN BARU
-    // ============================
     public function store(Request $request)
     {
         $request->validate([
@@ -63,16 +54,12 @@ class DaftarKaryawanController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
-        // Ambil waktu pendaftaran yang baru tercatat
         $waktuDaftar = $karyawan->created_at->format('d/m/Y H:i');
 
         return redirect()->route('admin.daftarKaryawan')
             ->with('success', "Karyawan berhasil ditambahkan pada $waktuDaftar.");
     }
 
-    // ============================
-    // HAPUS KARYAWAN
-    // ============================
     public function destroy($id)
     {
         $karyawan = User::findOrFail($id);
