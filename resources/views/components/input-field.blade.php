@@ -62,7 +62,7 @@
             type="{{ $type }}"
             value="{{ old($name, $value) }}"
             placeholder="{{ $placeholder ?? 'Masukkan ' . ($label ?: $name) }}"
-            class="w-full p-2 rounded-xl bg-[#1A2C4D] text-white border border-white/20"
+            class="w-full p-2 rounded-xl bg-[#746447] text-white border border-white/20"
         />
     @endif
 </div>

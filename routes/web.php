@@ -19,19 +19,35 @@ Route::get('/', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
-// User
+// Karyawan
 Route::middleware(['auth', 'role:karyawan'])->group(function () {
     Route::get('/karyawan/riwayat-peminjaman-karyawan', [RiwayatPeminjamanKaryawanController::class, 'index'])->name('riwayatPeminjamanKaryawan');
+    Route::get('/riwayat/{id}/report', [RiwayatPeminjamanKaryawanController::class, 'pelaporanAlat'])->name('karyawan.report');
+    Route::post('/riwayat/report/store', [RiwayatPeminjamanKaryawanController::class, 'pelaporanStore'])->name('karyawan.report.store');
+
+    Route::get('/riwayat/{id}/return', [RiwayatPeminjamanKaryawanController::class, 'pengembalianAlat'])->name('karyawan.return');
+    Route::post('/riwayat/return/store', [RiwayatPeminjamanKaryawanController::class, 'pengembalianStore'])->name('karyawan.return.store');
+    
+    //pengembalian alat
+    Route::get('/riwayat/{id}/return', [DaftarAlatKaryawanController::class, 'pengembalianAlat'])->name('karyawan.return');
+    Route::post('/riwayat/return/store', [DaftarAlatKaryawanController::class, 'pengembalianStore'])->name('karyawan.return.store');
+    
+    //pelaporan alat
+    Route::get('/riwayat/{id}/report', [DaftarAlatKaryawanController::class, 'pelaporanAlat'])->name('karyawan.report');
+    Route::post('/riwayat/report/store', [DaftarAlatKaryawanController::class, 'pelaporanStore'])->name('karyawan.report.store');
+
+    //daftar alat karyawan
     Route::get('/karyawan/daftar-alat', [DaftarAlatKaryawanController::class, 'index'])->name('daftarAlatKaryawan');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
 });
 
 // Admin
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/riwayat-peminjaman', [RiwayatPeminjamanController::class, 'index'])->name('riwayatPeminjaman');
-    
+
     Route::get('/daftar-alat', [DaftarAlatController::class, 'index'])->name('daftarAlat');
     Route::get('/daftar-alat/tambah-alat', [DaftarAlatController::class, 'tambahAlat'])->name('tambahAlat');
     Route::get('/daftar-alat/edit-alat', [DaftarAlatController::class, 'editAlat'])->name('editAlat');

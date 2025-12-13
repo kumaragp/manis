@@ -1,4 +1,9 @@
-@import '@fortawesome/fontawesome-free/css/all.min.css';
+@import "@fortawesome/fontawesome-free/css/all.min.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+main {
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+

@@ -3,6 +3,8 @@
     'allowedActions' => [], 
     'editRoute' => null, 
     'deleteRoute' => null,
+    'reportRoute' => null,
+    'returnRoute' => null,
     'idField' => 0
 ])
 
@@ -34,13 +36,25 @@
         </form>
     @endif
 
-    {{-- Tombol Cetak --}}
-    @if(in_array('print', $allowedActions))
-        <x-action-button 
-            label="Cetak" 
-            icon="fa-print"
-            href="#"
-        />
+    {{-- REPORT BUTTON --}}
+    @if($reportRoute && in_array('report', $allowedActions))
+        <a href="{{ route($reportRoute, ['id' => $row[$idField]]) }}"
+        class="inline-flex items-center space-x-2 bg-yellow-500 px-4 py-2 rounded-full 
+                hover:bg-yellow-600 transition duration-200">
+            <span>Report</span>
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </a>
     @endif
+
+    {{-- RETURN BUTTON --}}
+    @if($returnRoute && in_array('return', $allowedActions))
+        <a href="{{ route($returnRoute, ['id' => $row[$idField]]) }}"
+        class="inline-flex items-center space-x-2 bg-green-600 px-4 py-2 rounded-full 
+                hover:bg-green-700 transition duration-200">
+            <span>Return</span>
+            <i class="fa-solid fa-rotate-left"></i>
+        </a>
+    @endif
+
 
 </div>

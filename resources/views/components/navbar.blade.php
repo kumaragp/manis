@@ -7,7 +7,7 @@
     $borderColor = $isAdmin ? 'border-[#2A3F68]' : 'border-[#5A4015]';
 @endphp
 
-<header class="flex items-center justify-between p-4 px-20 {{ $navbarColor }} border-b {{ $borderColor }} shadow-lg">
+<header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 px-20 {{ $navbarColor }} border-b {{ $borderColor }} shadow-lg">
 
     <a href="{{ route('riwayatPeminjaman') }}" class="flex items-center space-x-3 cursor-pointer">
         <img src="{{ asset('images/logo.png') }}" alt="Logo Kawasan" class="h-10 w-auto">
