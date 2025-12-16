@@ -11,26 +11,26 @@ class RiwayatPeminjamanKaryawanController extends Controller
     {
         return view('layouts.karyawan.riwayatPeminjaman', [
             'mode' => 'table',
-            'columns' => ['No', 'Alat', 'Jumlah', 'Status'],
+            'columns' => ['No', 'Waktu', 'Alat', 'Jumlah', 'Status'],
             'rows' => [
-                [1, 'Telescopic Ladder 3.8', 2, 'TERSEDIA'],
-                [2, 'Telescopic Ladder 2.6', 1, 'RUSAK']
+                [1, '09:00 AM', 'Telescopic Ladder 3.8', 2, 'Tersedia'],
+                [2, '11:00 AM', 'Telescopic Ladder 2.6', 1, 'Digunakan']
             ],
-            'actions' => ['delete']
+            'actions' => ['report', 'return']
         ]);
     }
 
-    public function tambahPerawatan()
-    {
-        return view('layouts.karyawan.riwayatPeminjamanKaryawan', [
-            'mode' => 'tambahPerawatan'
-        ]);
-    }
-
-    public function editPerawatan()
+    public function pelaporanAlat()
     {
         return view('layouts.karyawan.riwayatPeminjaman', [
-            'mode' => 'editPerawatan'
+            'mode' => 'pelaporanAlat'
+        ]);
+    }
+
+    public function pengembalianAlat()
+    {
+        return view('layouts.karyawan.riwayatPeminjaman', [
+            'mode' => 'pengembalianAlat'
         ]);
     }
 }
