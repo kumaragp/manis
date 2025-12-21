@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\User; // pastikan modelnya benar
+use App\Models\User; 
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 class DaftarKaryawanController extends Controller
 {
@@ -14,26 +16,27 @@ class DaftarKaryawanController extends Controller
 
         $rows = $karyawan->map(function ($item, $index) {
             return [
-                $index + 1,
-                $item->name,
-                $item->divisi ?? '-',
-                $item->created_at->format('d/m/Y H:i'),
-                $item->id, // penting untuk edit/delete
+                'no' => $index + 1,
+                'name' => $item->name,
+                'divisi' => $item->divisi ?? '-',
+                'token' => $item->token ?? '-',
+                'id' => $item->id,
             ];
         });
 
         return view('layouts.admin.daftarKaryawan', [
             'mode' => 'table',
-            'columns' => ['No', 'Nama', 'Divisi', 'Waktu Terdaftar'],
+            'columns' => ['No','Nama','Divisi','Token'],
             'rows' => $rows,
-            'actions' => ['delete']
+            'actions' => ['edit','reset','delete'],
+            'idField' => 'id'
         ]);
     }
 
     public function tambahAkun()
     {
         return view('layouts.admin.daftarKaryawan', [
-            'mode' => 'tambahAkun'
+            'mode' => 'tambah'
         ]);
     }
 
@@ -42,29 +45,69 @@ class DaftarKaryawanController extends Controller
         $request->validate([
             'name' => 'required',
             'divisi' => 'required',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:5',
+            'email' => 'required|email|unique:users,email'
         ]);
 
-        $karyawan = User::create([
+        $token = strtoupper(Str::random(8));
+
+        User::create([
             'name' => $request->name,
             'divisi' => $request->divisi,
             'email' => $request->email,
             'role' => 'karyawan',
-            'password' => bcrypt($request->password),
+            'token' => $token,
+            'password' => Hash::make($token),
         ]);
 
-        $waktuDaftar = $karyawan->created_at->format('d/m/Y H:i');
+        return redirect()->route('admin.karyawan')
+            ->with('success', "Karyawan berhasil ditambahkan");
+    }
 
-        return redirect()->route('admin.daftarKaryawan')
-            ->with('success', "Karyawan berhasil ditambahkan pada $waktuDaftar.");
+    public function edit($id)
+    {
+        return view('layouts.admin.daftarKaryawan', [
+            'mode' => 'edit',
+            'data' => User::findOrFail($id)
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $k = User::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required',
+            'divisi' => 'required',
+            'email' => 'required|email|unique:users,email,' . $k->id
+        ]);
+
+        $k->update([
+            'name' => $request->name,
+            'divisi' => $request->divisi,
+            'email' => $request->email
+        ]);
+
+        return redirect()->route('admin.karyawan')->with('success', 'Data karyawan berhasil diperbarui.');
+    }
+
+    public function resetPassword($id)
+    {
+        $k = User::findOrFail($id);
+
+        $newToken = Str::upper(Str::random(8));
+
+        $k->update([
+            'token' => $newToken,
+            'password' => Hash::make($newToken)
+        ]);
+
+        return redirect()->back()->with('success', "Token sudah berhasil di reset");
     }
 
     public function destroy($id)
     {
-        $karyawan = User::findOrFail($id);
-        $karyawan->delete();
+        User::findOrFail($id)->delete();
 
-        return redirect()->route('admin.daftarKaryawan')->with('success', 'Karyawan berhasil dihapus.');
+        return redirect()->route('admin.karyawan')->with('success', 'Karyawan berhasil dihapus.');
     }
 }

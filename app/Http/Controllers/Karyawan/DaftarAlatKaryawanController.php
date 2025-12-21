@@ -3,81 +3,108 @@
 namespace App\Http\Controllers\Karyawan;
 
 use App\Http\Controllers\Controller;
+use App\Models\Alat;
+use App\Models\Peminjaman;
+use App\Models\Perawatan;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DaftarAlatKaryawanController extends Controller
 {
+    // Daftar semua alat
     public function index()
     {
-        // Data dummy alat-alat
-        $alats = [
-            [
-                'id' => 1,
-                'nama' => 'TANGGA TELESCOPIC 2.6',
-                'status' => 'TERSEDIA',
-                'gambar' => asset('images/ladder.png'),
-            ],
-
-            [
-                'id' => 2,
-                'nama' => 'TANGGA TELESCOPIC 3.8',
-                'status' => 'DIGUNAKAN',
-                'gambar' => asset('images/ladder.png')
-            ],
-            [
-                'id' => 3,
-                'nama' => 'TANGGA TELESCOPIC 5.5',
-                'status' => 'TERSEDIA',
-                'gambar' => asset('images/ladder.png')
-            ],
-            [
-                'id' => 4,
-                'nama' => 'KRISBOW JETSTEAM',
-                'status' => 'TERSEDIA',
-                'gambar' => asset('images/ladder.png')
-            ],
-            [
-                'id' => 5,
-                'nama' => 'KRISBOW KOMPRESOR',
-                'status' => 'TERSEDIA',
-                'gambar' => asset('images/ladder.png')
-            ],
-            [
-                'id' => 6,
-                'nama' => 'KRISBOW GENSET PORTABLE',
-                'status' => 'TERSEDIA',
-                'gambar' => asset('images/ladder.png')
-            ],
-            [
-                'id' => 7,
-                'nama' => 'POMPA SUBMERSIBLE 3 INCH',
-                'status' => 'TERSEDIA',
-                'gambar' => asset('images/ladder.png')
-            ],
-            [
-                'id' => 8,
-                'nama' => 'TOOL BOX (50X26X24)',
-                'status' => 'TERSEDIA',
-                'gambar' => asset('images/ladder.png')
-            ],
-        ];
+        $alat = Alat::all()->map(function ($alat) {
+            return [
+                'id' => $alat->id,
+                'nama' => $alat->nama_alat,
+                'status' => Str::upper(str_replace('_', ' ', $alat->status)),
+                'stok' => $alat->jumlah_alat,
+                'gambar' => $alat->gambar,
+            ];
+        });
 
         return view('layouts.karyawan.daftarAlat', [
-            'alats' => $alats
+            'columns' => ['No', 'Alat', 'Jumlah', 'Status'],
+            'alat' => $alat,
+            'mode' => 'table',
         ]);
     }
 
-        public function pelaporanAlat()
+    // Form peminjaman alat
+    public function peminjamanAlat($id)
     {
+        $alat = Alat::findOrFail($id);
+
         return view('layouts.karyawan.riwayatPeminjaman', [
+            'alat' => $alat,
+            'mode' => 'peminjamanAlat'
+        ]);
+    }
+
+    // Simpan peminjaman alat
+    public function storePeminjaman(Request $request, $id)
+    {
+        $request->validate([
+            'jumlah' => 'required|integer|min:1',
+        ]);
+
+        $alat = Alat::findOrFail($id);
+
+        \DB::table('peminjaman')->insert([
+            'alat_id' => $alat->id,
+            'karyawan_id' => auth()->id(),
+            'jumlah' => $request->jumlah,
+            'tanggal_pinjam' => now(),
+            'status' => 'sedang_digunakan',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $alat->jumlah_alat -= $request->jumlah;
+        $alat->save();
+
+        return redirect()->route('riwayatPeminjamanKaryawan')
+            ->with('success', 'Alat berhasil dipinjam.');
+    }
+
+    // Form laporan alat rusak
+    public function pelaporanAlat($id)
+    {
+        $alat = Alat::findOrFail($id);
+
+        return view('layouts.karyawan.riwayatPeminjaman', [
+            'alat' => $alat,
             'mode' => 'pelaporanAlat'
         ]);
     }
 
-    public function pengembalianAlat()
+    // Simpan laporan alat rusak
+    public function storePelaporan(Request $request, $alatId)
     {
-        return view('layouts.karyawan.riwayatPeminjaman', [
-            'mode' => 'pengembalianAlat'
+        $request->validate([
+            'keterangan' => 'required|string|max:255',
+            'tanggal' => 'required|date',
+            'jumlah' => 'required|integer|min:1'
         ]);
+
+        $alat = Alat::findOrFail($alatId);
+
+        $alat->jumlah_alat = max(0, $alat->jumlah_alat - $request->jumlah);
+        $alat->status = 'rusak';
+        $alat->save();
+
+        Perawatan::create([
+            'alat_id' => $alat->id,
+            'tanggal' => $request->tanggal,
+            'jumlah' => $request->jumlah,
+            'status' => 'rusak',
+            'deskripsi' => $request->keterangan,
+            'teknisi' => null,
+        ]);
+
+        return redirect()->route('riwayatPeminjamanKaryawan')
+            ->with('success', 'Alat berhasil dilaporkan.');
     }
 }

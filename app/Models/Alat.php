@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class alat extends Model
+class Alat extends Model
 {
+    use SoftDeletes;
     use HasFactory;
 
     protected $table = 'alat';
@@ -13,17 +16,29 @@ class alat extends Model
     protected $fillable = [
         'nama_alat',
         'jumlah_alat',
-        'gambar',
-        'status',
-        'tanggal_event',
         'harga',
-        'vendor',
-        'tujuan',
+        'status',
+        'gambar',
     ];
 
-    protected $casts = [
-        'tanggal_event' => 'date',
-        'harga' => 'integer',
-        'jumlah_alat' => 'integer',
-    ];
+    public function peminjaman()
+    {
+        return $this->hasMany(Peminjaman::class, 'alat_id');
+    }
+
+    public function pengadaan()
+    {
+        return $this->hasMany(Pengadaan::class, 'alat_id');
+    }
+
+    public function penjualan()
+    {
+        return $this->hasMany(Penjualan::class, 'alat_id');
+    }
+
+    public function perawatan()
+    {
+        return $this->hasMany(Perawatan::class, 'alat_id');
+    }
+
 }

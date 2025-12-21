@@ -1,64 +1,53 @@
 @props([
     'id',
-    'nama' => 'Nama Alat',
-    'gambar' => 'https://via.placeholder.com/150',
-    'status' => 'TERSEDIA',
+    'nama',
+    'gambar',
+    'status',
+    'stok' => 0,
 ])
 
 @php
-    $statusColor = match($status) {
+    $finalStatus = $stok == 0 ? 'STOK HABIS' : $status;
+
+    $statusColor = match($finalStatus) {
         'TERSEDIA' => 'bg-green-500',
-        'DIGUNAKAN' => 'bg-yellow-500',
-        default => 'bg-red-500',
+        'DIGUNAKAN', 'SEDANG DIGUNAKAN' => 'bg-yellow-500',
+        'DALAM PERAWATAN' => 'bg-blue-500',
+        'STOK HABIS', 'RUSAK' => 'bg-red-500',
+        default => 'bg-gray-500',
     };
 @endphp
 
 <div class="bg-[#8B7355] rounded-2xl p-4 shadow-xl hover:shadow-2xl transition duration-300 h-full">
-
     <div class="flex gap-4">
-
-        {{-- KIRI: Gambar --}}
-        <div class="bg-white rounded-xl p-3 w-40 aspect-square flex items-center justify-center">
-            <img 
-                src="{{ $gambar }}" 
-                alt="{{ $nama }}" 
-                class="object-contain w-full h-full"
-            >
+        <div class="bg-white rounded-xl w-40 h-40 overflow-hidden flex items-center justify-center">
+            <img src="{{ Storage::url($gambar) }}" class="w-full h-full object-cover" />
         </div>
 
-        {{-- KANAN: Info --}}
         <div class="flex-1 flex flex-col justify-center items-start gap-3 py-2">
-
-            {{-- Status --}}
             <span class="{{ $statusColor }} text-white text-xs font-bold px-4 py-1 rounded-full uppercase">
-                {{ $status }}
+                {{ $finalStatus }}
             </span>
-
-            {{-- Nama --}}
             <h3 class="text-white font-bold leading-tight">
                 {{ $nama }}
             </h3>
-
-            {{-- Tombol Aksi --}}
+            <p class="text-white/80 text-sm">
+                Stok: <span class="font-semibold">{{ $stok }}</span>
+            </p>
             <div class="flex gap-3 mt-1">
-
-                {{-- Pengembalian --}}
-                <a href="{{ route('karyawan.return', ['id' => $id]) }}"
-                class="bg-white hover:bg-gray-100 text-[#8B7355] rounded-full w-10 h-10 flex items-center justify-center shadow-md transition">
-                <i class="fa-solid fa-hand-holding-hand text-xl"></i>
+                <a href="{{ route('peminjamanAlat', ['id' => $id]) }}"
+                class="bg-white hover:bg-gray-100 text-[#8B7355]
+                        rounded-full w-10 h-10 flex items-center justify-center
+                        shadow-md transition">
+                    <i class="fa-solid fa-hand-holding-hand text-xl"></i>
                 </a>
-
-                {{-- Report --}}
-                <a href="{{ route('karyawan.report', ['id' => $id]) }}"
-                class="bg-white hover:bg-gray-100 text-[#8B7355] rounded-full w-10 h-10 flex items-center justify-center shadow-md transition">
+                <a href="{{ route('pelaporanAlat', ['id' => $id]) }}"
+                   class="bg-white hover:bg-gray-100 text-[#8B7355]
+                          rounded-full w-10 h-10 flex items-center justify-center
+                          shadow-md transition">
                     <i class="fa-solid fa-circle-exclamation text-xl"></i>
                 </a>
-
-
             </div>
-
         </div>
-
     </div>
-
 </div>

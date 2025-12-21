@@ -2,6 +2,8 @@
     'action', 
     'method' => 'POST',
     'title' => null,
+    'submitText' => 'Submit',
+    'submitIcon' => 'fa-paper-plane',
 ])
 
 @php
@@ -10,7 +12,7 @@
 @endphp
 
 @if($title)
-    <h1 class="text-4xl font-extrabold text-white text-center mb-8">
+    <h1 class="text-3xl font-extrabold text-white mb-6 border-b border-white/20 pb-4">
         {{ $title }}
     </h1>
 @endif
@@ -23,21 +25,21 @@
             @method($method)
         @endif
 
-        {{ $slot }}
+        <div class="flex flex-col space-y-4">
+            {{ $slot }}
+        </div>
 
         <div class="flex justify-end space-x-3 mt-6">
-            {{-- Tombol Submit --}}
             <button type="submit"
-                class="inline-flex items-center space-x-2 bg-yellow-500 hover:bg-yellow-600
+                class="inline-flex items-center space-x-2 bg-green-500 hover:bg-green-600
                        text-white font-bold px-6 py-2.5 rounded-full shadow-lg transition">
 
-                <span>Submit</span>
-                <i class="fa-solid fa-paper-plane text-lg"></i>
+                <span>{{ $submitText }}</span>
+                <i class="fa-solid {{ $submitIcon }} text-lg"></i>
             </button>
 
-            {{-- Tombol Batal --}}
             <a href="{{ url()->previous() }}"
-                class="inline-flex items-center space-x-2 bg-gray-500 hover:bg-gray-600
+                class="inline-flex items-center space-x-2 bg-red-500 hover:bg-red-600
                        text-white font-bold px-6 py-2.5 rounded-full shadow-lg transition">
 
                 <span>Batal</span>

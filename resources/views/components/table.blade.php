@@ -2,15 +2,14 @@
 
 @php
     $role = Auth::user()->role ?? 'admin';
-    
+
     $bgTable = $role === 'karyawan' ? 'bg-[#746447]' : 'bg-[#0A3B65]';
     $textColor = $role === 'karyawan' ? 'text-[#ffffff]' : 'text-white';
     $borderColor = $role === 'karyawan' ? 'border-[#8B7355]' : 'border-[#2A3F68]';
     $hoverBg = $role === 'karyawan' ? 'hover:bg-[#8B7355]/50' : 'hover:bg-[#1A2C4D]/70';
 @endphp
 
-{{-- JUDUL--}}
-<h1 class="text-3xl font-extrabold text-white mb-6 border-b border-white/20 pb-4">
+<h1 class="text-3xl font-extrabold text-white mb-6 border-b border-white/20 pb-4 pt-16">
     {{ $slot ?? 'Tabel' }}
 </h1>
 
@@ -20,50 +19,60 @@
     </div>
 @endif
 
-{{-- BAGIAN TABEL --}}
-<div class="{{ $bgTable }} p-6 rounded-2xl shadow-2xl">
-    <div class="overflow-x-auto">
-        <table class="min-w-full text-center {{ $textColor }} border-collapse">
+<!-- Tabel -->
+<div class="{{ $bgTable }} p-2 sm:p-6 rounded-2xl shadow-2xl max-w-full">
+
+    <!-- Wrapper -->
+    <div class="relative overflow-x-auto w-full">
+
+        <table class="min-w-max w-full text-center {{ $textColor }}
+                   border-collapse table-auto whitespace-nowrap">
+
             <thead>
-                {{-- HAPUS border-b dari sini --}}
                 <tr class="uppercase text-sm font-bold tracking-wide">
                     @foreach ($columns as $col)
-                        <th class="py-4 px-3 text-base">{{ $col }}</th>
+                        <th class="py-3 px-3 text-base whitespace-nowrap">
+                            {{ $col }}
+                        </th>
                     @endforeach
 
                     @if (!!$rowActions)
-                        <th class="py-4 px-3 text-base">Action</th>
+                        <th class="py-3 px-3 text-base whitespace-nowrap">
+                            Action
+                        </th>
                     @endif
                 </tr>
             </thead>
 
-            {{-- HAPUS divide-y dari sini --}}
             <tbody>
                 @foreach ($rows as $row)
                     <tr class="{{ $hoverBg }} transition duration-200">
-                        {{-- Cells --}}
-                        @foreach ($row as $cell)
-                            <td class="py-3 text-lg">{{ $cell }}</td>
+                        @foreach ($row as $key => $cell)
+                            @if ($key !== 'id' && $key !== 'gambar')
+                                <td class="py-3 px-3 text-lg whitespace-nowrap">
+                                    {{ $cell }}
+                                </td>
+                            @endif
                         @endforeach
 
-                        {{-- Row Actions --}}
                         @if ($rowActions)
-                            <td class="py-3 flex justify-center">
-                                <x-dynamic-component 
-                                    :component="$rowActions"
-                                    :row="$row"
-                                    :allowedActions="$rowActionsParams['allowedActions'] ?? []"
-                                    :editRoute="$rowActionsParams['editRoute'] ?? null"
-                                    :deleteRoute="$rowActionsParams['deleteRoute'] ?? null"
-                                    :reportRoute="$rowActionsParams['reportRoute'] ?? null"
-                                    :returnRoute="$rowActionsParams['returnRoute'] ?? null"
-                                    :idField="$rowActionsParams['idField'] ?? 0"
-                                />
+                            <td class="py-2 px-3 whitespace-nowrap">
+                                <div class="flex justify-center gap-2">
+                                    <x-dynamic-component :component="$rowActions" :row="$row"
+                                        :allowedActions="$rowActionsParams['allowedActions'] ?? []"
+                                        :editRoute="$rowActionsParams['editRoute'] ?? null"
+                                        :deleteRoute="$rowActionsParams['deleteRoute'] ?? null"
+                                        :reportRoute="$rowActionsParams['reportRoute'] ?? null"
+                                        :returnRoute="$rowActionsParams['returnRoute'] ?? null"
+                                        :resetRoute="$rowActionsParams['resetRoute'] ?? null"
+                                        :idField="$rowActionsParams['idField'] ?? 'id'" />
+                                </div>
                             </td>
                         @endif
                     </tr>
                 @endforeach
             </tbody>
+
         </table>
     </div>
 </div>
