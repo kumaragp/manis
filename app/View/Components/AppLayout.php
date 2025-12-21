@@ -3,6 +3,7 @@
 namespace App\View\Components;
 
 use Illuminate\View\Component;
+use App\Models\Alat;
 use Illuminate\View\View;
 
 class AppLayout extends Component
@@ -12,6 +13,9 @@ class AppLayout extends Component
      */
     public function render(): View
     {
-        return view('layouts.app');
+        $alatList = Alat::where('jumlah_alat', '>', 0)->get();
+        return view('layouts.app',[
+            'alatList' => $alatList
+        ]);
     }
 }

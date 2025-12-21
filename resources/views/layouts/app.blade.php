@@ -5,45 +5,154 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <title>{{ config('app.name', 'Manis') }}</title>
 
-    <!-- Fonts -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased">
-    <x-navbar :user="Auth::user()" />
+<body class="font-sans antialiased overflow-x-hidden" x-data="{ sidebarOpen: false }">
 
-    
+    <x-navbar :user="Auth::user()">
+        <!-- Hamburger -->
+        <div class="lg:hidden flex items-center">
+            <button @click="sidebarOpen = true" class="text-white p-2">
+                <i class="fa-solid fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </x-navbar>
+
+
     <div class="min-h-screen 
     {{ Auth::user()->role === 'admin' ? 'bg-[#121E33]' : 'bg-[#4C3E24]' }}
     {{ Auth::user()->role === 'admin' ? 'flex' : '' }}">
-    
-    <!-- Hanya tampilkan nav-scrollbar jika role karyawan -->
-        @if(
-            Auth::user()->role === 'karyawan' &&
-            (request()->routeIs('daftarAlatKaryawan') || request()->routeIs('riwayatPeminjamanKaryawan'))
-        )
+
+        <!-- Nav Scrollbar -->
+        @if(Auth::user()->role === 'karyawan' && (request()->routeIs('daftarAlatKaryawan') || request()->routeIs('riwayatPeminjamanKaryawan')))
             <x-nav-scrollbar />
         @endif
 
-        <!-- Tampilkan sidebar hanya jika user admin -->
+        <!-- Sidebar Admin -->
         @if(Auth::user()->role === 'admin')
-            <x-sidebar :role="Auth::user()->role" />
+            <x-sidebar />
+
+            <!-- Hamburger -->
+            <div class="fixed top-0 right-0 h-full bg-black/50 z-40 lg:hidden" x-show="sidebarOpen" x-transition.opacity
+                @click="sidebarOpen = false">
+            </div>
+
+            <div x-cloak
+                class="fixed inset-y-0 right-0 w-64 bg-[#0A162B] shadow-2xl z-50 lg:hidden transform translate-x-full pointer-events-none transition-transform duration-300 ease-in-out"
+                :class="{ 'translate-x-0 pointer-events-auto': sidebarOpen, 'translate-x-full pointer-events-none': !sidebarOpen }">
+                <button @click="sidebarOpen = false" class="text-white p-4">
+                    <i class="fa-solid fa-xmark text-2xl"></i>
+                </button>
+
+                <x-sidebar-mobile />
+            </div>
+
         @endif
 
-        <main class="{{ Auth::user()->role === 'admin' ? 'flex-1' : 'w-full' }} mt-16 px-6 {{ Auth::user()->role === 'karyawan' ? 'pt-20' : '' }}">
+        <main class="{{ Auth::user()->role === 'admin' ? 'flex-1' : 'w-full' }} pt-16 px-6 overflow-x-hidden {{ Auth::user()->role === 'karyawan' ? 'pt-28' : '' }}">
             <div class="w-full">
                 {{ $slot }}
             </div>
         </main>
-
     </div>
+
 </body>
+
+<!-- Autofill Data -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const alatData = window.alatData ?? @json($alatList->keyBy('nama_alat') ?? []);
+        const alatSelect = document.getElementById('namaAlat');
+        const jumlahInput = document.getElementById('jumlahInput');
+        const hargaInput = document.getElementById('hargaInput');
+
+        // Jika elemen select tidak ada → tidak perlu lakukan apa-apa
+        if (!alatSelect) return;
+
+        // Fungsi untuk update field
+        function updateFields() {
+            const alat = alatData[alatSelect.value];
+            if (!alat) return;
+
+            // Untuk jumlahInput → wajib jika ada
+            if (jumlahInput) {
+                jumlahInput.max = alat.jumlah_alat;
+                if (!jumlahInput.value) jumlahInput.value = alat.jumlah_alat;
+
+                // Cegah nilai invalid
+                if (jumlahInput.value < 1) jumlahInput.value = 1;
+                if (jumlahInput.value > alat.jumlah_alat) jumlahInput.value = alat.jumlah_alat;
+            }
+
+            // Untuk hargaInput → optional
+            if (hargaInput && jumlahInput) {
+                hargaInput.value = alat.harga * jumlahInput.value;
+            }
+        }
+
+        // Event saat memilih alat
+        alatSelect.addEventListener('change', updateFields);
+
+        // Event saat mengubah jumlah
+        if (jumlahInput) {
+            jumlahInput.addEventListener('input', updateFields);
+        }
+
+    });
+</script>
+
+<!-- Request Suggestion -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.delete-btn')) {
+                e.preventDefault();
+                const form = e.target.closest('form');
+                if (!form) return;
+
+                Swal.fire({
+                    title: 'Yakin ingin menghapus data ini?',
+                    text: "Tindakan ini tidak bisa dibatalkan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.save-btn')) {
+                const form = e.target.closest('form');
+                if (form) form.submit();
+            }
+        });
+
+        @if(session('success'))
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: "{{ session('success') }}",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        @endif
+    });
+</script>
 
 </html>
