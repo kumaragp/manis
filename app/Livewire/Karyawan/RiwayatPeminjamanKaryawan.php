@@ -21,9 +21,12 @@ class RiwayatPeminjamanKaryawan extends Component
         'Tanggal Kembali'
     ];
 
-    public $rows = [];
-    public $mode = 'table';
+    public $search = '';
+    public $sortField = 'tanggal_pinjam';
+    public $sortDirection = 'desc';
+    public $perPage = 10;
 
+    public $mode = 'table';
     public $selectedPeminjaman = null;
     public $jumlah;
     public $keterangan;
@@ -34,30 +37,29 @@ class RiwayatPeminjamanKaryawan extends Component
         'openPengembalian' => 'openPengembalian',
     ];
 
-    public function mount()
+    public function updatingSearch()
     {
-        $this->loadData();
+        $this->resetPage();
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
     }
 
     public function loadData()
     {
-        $this->rows = Peminjaman::with('alat')
+        return Peminjaman::with('alat')
             ->where('karyawan_id', Auth::id())
-            ->orderBy('tanggal_pinjam', 'desc')
-            ->get()
-            ->map(function ($item, $index) {
-                return [
-                    'id' => $item->id,
-                    'no' => $index + 1,
-                    'nama' => $item->alat->nama_alat ?? 'Alat dihapus',
-                    'jumlah' => $item->jumlah,
-                    'status' => Str::upper(str_replace('_', ' ', $item->status)),
-                    'tanggal_pinjam' => Carbon::parse($item->tanggal_pinjam)->format('d/m/Y H:i'),
-                    'tanggal_kembali' => $item->tanggal_kembali
-                        ? Carbon::parse($item->tanggal_kembali)->format('d/m/Y H:i')
-                        : '-',
-                ];
-            })->toArray();
+            ->whereHas('alat', fn($q) => $q->where('nama_alat', 'like', "%{$this->search}%"))
+            ->orWhere('status', 'like', "%{$this->search}%")
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate($this->perPage);
     }
 
     public function openPelaporan($id)
@@ -94,17 +96,10 @@ class RiwayatPeminjamanKaryawan extends Component
             'teknisi' => null,
         ]);
 
-        $message = 'Alat berhasil dilaporkan';
-
-        $this->dispatch(
-            'toast',
-            type: 'success',
-            message: $message
-        );
-
+        $this->dispatch('toast', type: 'success', message: 'Alat berhasil dilaporkan');
         $this->resetModal();
-        $this->loadData();
     }
+
     public function storePengembalian()
     {
         $this->validate([
@@ -138,16 +133,8 @@ class RiwayatPeminjamanKaryawan extends Component
             $peminjaman->alat->save();
         }
 
-        $message = 'Pengembalian alat berhasil dilakukan';
-
-        $this->dispatch(
-            'toast',
-            type: 'success',
-            message: $message
-        );
-
+        $this->dispatch('toast', type: 'success', message: 'Pengembalian alat berhasil dilakukan');
         $this->resetModal();
-        $this->loadData();
     }
 
     public function resetModal()
@@ -162,6 +149,25 @@ class RiwayatPeminjamanKaryawan extends Component
     #[Layout('layouts.app')]
     public function render()
     {
-        return view('livewire.karyawan.riwayat-peminjaman-karyawan');
+        $peminjaman = $this->loadData();
+
+        $tableRows = $peminjaman->through(function ($item, $index) use ($peminjaman) {
+            return [
+                'id' => $item->id,
+                'no' => $index + 1 + ($peminjaman->currentPage() - 1) * $peminjaman->perPage(),
+                'nama' => $item->alat?->nama_alat ?? 'Alat dihapus',
+                'jumlah' => $item->jumlah,
+                'status' => Str::upper(str_replace('_', ' ', $item->status)),
+                'tanggal_pinjam' => Carbon::parse($item->tanggal_pinjam)->format('d/m/Y H:i'),
+                'tanggal_kembali' => $item->tanggal_kembali
+                    ? Carbon::parse($item->tanggal_kembali)->format('d/m/Y H:i')
+                    : '-',
+            ];
+        });
+
+        return view('livewire.karyawan.riwayat-peminjaman-karyawan', [
+            'rows' => $tableRows,
+            'pagination' => $peminjaman,
+        ]);
     }
 }

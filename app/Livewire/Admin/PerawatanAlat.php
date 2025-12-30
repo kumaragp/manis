@@ -6,16 +6,20 @@ use Livewire\Component;
 use App\Models\Perawatan;
 use App\Models\Alat;
 use Carbon\Carbon;
+use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
 
 class PerawatanAlat extends Component
 {
+    use WithPagination;
+
     public $columns = ['No', 'Tanggal', 'Alat', 'Jumlah', 'Teknisi', 'Status'];
-    public $rows = [];
+    public $search = '';
+    public $sortField = 'tanggal';
+    public $sortDirection = 'desc';
 
     public $isOpen = false;
     public $perawatanId = null;
-
     public $alat_id;
     public $jumlah = 1;
     public $teknisi = '';
@@ -29,12 +33,32 @@ class PerawatanAlat extends Component
     public $alatData = [];
 
     protected $listeners = ['delete-data' => 'delete'];
+    protected $paginationTheme = 'tailwind';
 
     public function mount()
     {
         $this->loadAlat();
-        $this->loadData();
         $this->tanggal = now()->format('Y-m-d');
+    }
+
+    public function searchData()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
     }
 
     public function loadAlat()
@@ -49,30 +73,11 @@ class PerawatanAlat extends Component
             ->toArray();
     }
 
-    public function loadData()
-    {
-        $this->rows = Perawatan::with('alat')->get()->map(function ($item, $index) {
-            return [
-                'no' => $index + 1,
-                'tanggal' => Carbon::parse($item->tanggal)->format('d/m/Y'),
-                'alat' => $item->alat?->nama_alat ?? '-',
-                'jumlah' => $item->jumlah,
-                'teknisi' => $item->teknisi,
-                'status' => strtoupper(str_replace('_', ' ', $item->status)),
-                'can_edit' => $item->status !== 'diperbaiki',
-                'id' => $item->id
-            ];
-        })->toArray();
-    }
-
     public function openModal($id = null)
     {
         $this->resetForm();
-
-        if ($id) {
+        if ($id)
             $this->edit($id);
-        }
-
         $this->isOpen = true;
     }
 
@@ -80,7 +85,7 @@ class PerawatanAlat extends Component
     {
         $this->perawatanId = null;
         $this->alat_id = null;
-        $this->jumlah = 1; // langsung 1
+        $this->jumlah = 1;
         $this->stok_tersedia = 0;
         $this->teknisi = '';
         $this->tanggal = now()->format('Y-m-d');
@@ -108,13 +113,9 @@ class PerawatanAlat extends Component
             return;
         }
 
-        $alat = $this->alatData[$this->alat_id];
-        $this->stok_tersedia = $alat['stok'];
-
-        // langsung set jumlah ke 1 saat modal baru dibuka
-        if (!$this->perawatanId) {
+        $this->stok_tersedia = $this->alatData[$this->alat_id]['stok'];
+        if (!$this->perawatanId)
             $this->jumlah = 1;
-        }
     }
 
     public function save()
@@ -131,7 +132,6 @@ class PerawatanAlat extends Component
         ]);
 
         if ($this->perawatanId) {
-            // update
             Perawatan::where('id', $this->perawatanId)->update([
                 'teknisi' => $this->teknisi,
                 'tanggal' => $this->tanggal,
@@ -139,7 +139,6 @@ class PerawatanAlat extends Component
                 'deskripsi' => $this->deskripsi,
             ]);
         } else {
-            // create
             $alat = Alat::findOrFail($this->alat_id);
             $alat->decrement('jumlah_alat', $this->jumlah);
 
@@ -154,9 +153,7 @@ class PerawatanAlat extends Component
         }
 
         $this->dispatch('alat-updated');
-
         $this->closeModal();
-        $this->loadData();
     }
 
     public function edit($id)
@@ -164,11 +161,7 @@ class PerawatanAlat extends Component
         $data = Perawatan::findOrFail($id);
 
         if ($data->status === 'diperbaiki') {
-            $this->dispatch(
-                event: 'toast',
-                type: 'warning',
-                message: 'Perawatan sudah diperbaiki tidak dapat di edit'
-            );
+            $this->dispatch('toast', type: 'warning', message: 'Perawatan sudah diperbaiki tidak dapat di edit');
             return;
         }
 
@@ -185,15 +178,10 @@ class PerawatanAlat extends Component
 
     public function delete($id)
     {
-        $Perawatan = Perawatan::findOrFail($id);
-        $Perawatan->delete();
+        $perawatan = Perawatan::findOrFail($id);
+        $perawatan->delete();
 
-        $this->loadData();
-        $this->dispatch(
-                event: 'toast',
-                type: 'success',
-                message: 'Perawatan alat berhasil dihapus'
-            );
+        $this->dispatch('toast', type: 'success', message: 'Perawatan alat berhasil dihapus');
     }
 
     public function closeModal()
@@ -204,6 +192,28 @@ class PerawatanAlat extends Component
     #[Layout('layouts.app')]
     public function render()
     {
-        return view('livewire.admin.perawatan-alat');
+        $perawatan = Perawatan::with('alat')
+            ->whereHas('alat', fn($q) => $q->where('nama_alat', 'like', "%{$this->search}%"))
+            ->orWhere('teknisi', 'like', "%{$this->search}%")
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate(10);
+
+        $tableRows = $perawatan->through(function ($item, $index) use ($perawatan) {
+            return [
+                'id' => $item->id,
+                'no' => $index + 1 + ($perawatan->currentPage() - 1) * $perawatan->perPage(),
+                'tanggal' => Carbon::parse($item->tanggal)->format('d/m/Y'),
+                'alat' => $item->alat?->nama_alat ?? '-',
+                'jumlah' => $item->jumlah,
+                'teknisi' => $item->teknisi,
+                'status' => strtoupper(str_replace('_', ' ', $item->status)),
+                'can_edit' => $item->status !== 'diperbaiki',
+            ];
+        });
+
+        return view('livewire.admin.perawatan-alat', [
+            'rows' => $tableRows,
+            'pagination' => $perawatan,
+        ]);
     }
 }

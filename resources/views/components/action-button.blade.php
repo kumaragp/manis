@@ -1,19 +1,28 @@
 @props([
     'label' => 'Aksi',
-    'href' => '#',
-    'icon' => 'fa-plus'
+    'icon' => null,
+    'type' => 'button'
 ])
 
 <button
-    type="button"
+    type="{{ $type }}"
     {{ $attributes->merge([
-        'class' => 'inline-flex items-center space-x-2 bg-[#55A0FF] hover:bg-[#3B8FE0] 
-          text-[#0A3B65] font-bold px-6 py-2 rounded-full shadow-md 
-          transition duration-200'
+        'class' => '
+            inline-flex items-center justify-center gap-2
+            bg-[#55A0FF] hover:bg-[#3B8FE0]
+            text-[#0A3B65] font-bold
+            shadow-md transition duration-200
+
+            px-3 py-3 rounded-full        /* mobile: icon only */
+            sm:px-6 sm:py-2 sm:rounded-full
+        '
     ]) }}
 >
     @if ($icon)
-        <i class="fa {{ $icon }}"></i>
+        <i class="fa-solid {{ $icon }} text-base sm:text-sm"></i>
     @endif
-    {{ $label }}
+
+    <span class="hidden sm:inline">
+        {{ $label }}
+    </span>
 </button>

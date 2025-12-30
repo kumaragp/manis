@@ -1,7 +1,11 @@
-<aside class="hidden lg:flex flex-shrink-0 w-64 justify-center pt-16">
-    <div class="bg-[#121E33] w-full px-6">
-        <nav class="bg-[#0A162B] flex flex-col py-10 px-6 shadow-2xl rounded-3xl border border-[#1F2E4D] mt-16">
-            <div class="space-y-6 w-full">
+<aside class="hidden lg:flex w-64 flex-shrink-0 h-screen pb-10 bg-[#121E33]">
+    <div class="flex flex-col w-full h-full">
+
+        <div class="h-24 shrink-0"></div>
+
+        <div class="flex-1 px-4 pb-6">
+            <nav class="bg-[#0A162B] rounded-3xl border border-[#1F2E4D]
+                        py-8 px-4 shadow-2xl h-full flex flex-col">
 
                 @php
                     $menuItems = [
@@ -14,17 +18,26 @@
                     ];
                 @endphp
 
-                @foreach($menuItems as $item)
-                    <a href="{{ route($item['route']) }}"
-                       class="group flex flex-col items-center justify-center p-3 rounded-xl text-[#54A6EE] hover:text-white hover:bg-[#F0A92E] transition-all duration-200 shadow-lg">
-                        <i class="fa-solid {{ $item['icon'] }} text-4xl transition-all duration-200 group-hover:mb-1"></i>
-                        <span class="text-[14px] text-center leading-tight opacity-0 group-hover:opacity-100 transition-all duration-200 mt-0 group-hover:mt-1">
-                            {{ $item['label'] }}
-                        </span>
-                    </a>
-                @endforeach
+                <div class="flex flex-col justify-between h-full">
+                    @foreach($menuItems as $item)
+                        <a href="{{ route($item['route']) }}" class="group w-full flex flex-col items-center justify-center
+                                      py-5 rounded-xl text-[#54A6EE]
+                                      hover:bg-[#F0A92E] hover:text-white
+                                      transition-all duration-200 shadow-lg">
 
-            </div>
-        </nav>
+                            <i class="fa-solid {{ $item['icon'] }} text-3xl
+                                          transition-transform duration-200
+                                          group-hover:-translate-y-1"></i>
+
+                            <span class="text-xs text-center mt-1 opacity-0
+                                             group-hover:opacity-100 transition">
+                                {{ $item['label'] }}
+                            </span>
+                        </a>
+                    @endforeach
+                </div>
+
+            </nav>
+        </div>
     </div>
 </aside>

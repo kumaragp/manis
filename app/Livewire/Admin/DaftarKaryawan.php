@@ -7,10 +7,13 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
+use Livewire\WithPagination;
 
 class DaftarKaryawan extends Component
 {
-    public $mode = 'table'; // table, tambah, edit
+    use WithPagination;
+
+    public $mode = 'table';
     public $data = null;
 
     public $columns = ['No', 'Nama', 'Divisi', 'Token'];
@@ -21,12 +24,27 @@ class DaftarKaryawan extends Component
     public $name;
     public $divisi;
     public $token;
-
     public $editId = null;
+
+    // Search & Sorting
+    public $search = '';
+    public $sortField = 'created_at';
+    public $sortDirection = 'desc';
+    public $perPage = 10;
 
     protected $listeners = [
         'delete-data' => 'delete'
     ];
+
+    public function searchData()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
 
     public function mount()
     {
@@ -35,17 +53,34 @@ class DaftarKaryawan extends Component
 
     public function loadData()
     {
-        $karyawan = User::where('role', 'karyawan')->get();
+        $query = User::where('role', 'karyawan')
+            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
+            ->orderBy($this->sortField, $this->sortDirection);
 
-        $this->rows = $karyawan->map(function ($item, $index) {
+        $karyawan = $query->paginate($this->perPage);
+
+        $this->rows = $karyawan->map(function ($item, $index) use ($karyawan) {
             return [
-                'no' => $index + 1,
+                'no' => $karyawan->firstItem() + $index,
                 'name' => $item->name,
                 'divisi' => $item->divisi ?? '-',
                 'token' => $item->token ?? '-',
                 'id' => $item->id
             ];
         })->toArray();
+
+        return $karyawan; // untuk pagination links di Blade
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+        $this->resetPage();
     }
 
     public function showTambah()
@@ -101,8 +136,8 @@ class DaftarKaryawan extends Component
         );
 
         $this->mode = 'table';
-        $this->loadData();
         $this->resetForm();
+        $this->resetPage();
     }
 
     public function update()
@@ -128,8 +163,8 @@ class DaftarKaryawan extends Component
         );
 
         $this->mode = 'table';
-        $this->loadData();
         $this->resetForm();
+        $this->resetPage();
     }
 
     public function resetToken($id)
@@ -148,25 +183,29 @@ class DaftarKaryawan extends Component
             message: 'Token sudah berhasil di reset'
         );
 
-        $this->loadData();
+        $this->resetPage();
     }
 
     public function delete($id)
     {
-        $Karyawan = User::findOrFail($id);
+        $karyawan = User::findOrFail($id);
+        $karyawan->delete();
 
-        $Karyawan->delete();
-        $this->loadData();
         $this->dispatch(
             event: 'toast',
             type: 'success',
             message: 'Karyawan berhasil dihapus'
         );
+
+        $this->resetPage();
     }
 
     #[Layout('layouts.app')]
     public function render()
     {
-        return view('livewire.admin.daftar-karyawan');
+        $karyawanPagination = $this->loadData(); // ambil data paginasi
+        return view('livewire.admin.daftar-karyawan', [
+            'karyawanPagination' => $karyawanPagination
+        ]);
     }
 }

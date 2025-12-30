@@ -6,22 +6,20 @@ use Livewire\Component;
 use App\Models\Alat;
 use App\Models\Penjualan;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 
 class PenjualanAlat extends Component
 {
-    use WithFileUploads;
-    // table
+    use WithFileUploads, WithPagination;
+
     public $columns = ['No', 'Tanggal', 'Alat', 'Jumlah', 'Harga'];
-    public $rows = [];
+    public $search = '';
+    public $sortField = 'tanggal_penjualan';
+    public $sortDirection = 'desc';
 
-    // stats
-    public $totalAlat;
-    public $totalPenjualan;
-    public $rataRataHarga;
-
-    // modal
+    // Modal
     public $isOpen = false;
     public $penjualanId;
     public $tanggal;
@@ -30,21 +28,45 @@ class PenjualanAlat extends Component
     public $gambar;
 
     public $jumlah = 1;
-
     public $stok_tersedia = 0;
     public $harga_satuan = 0;
     public $harga_total = 0;
 
     public $alatList = [];
     public $alatData = [];
-    protected $listeners = [
-        'delete-data' => 'delete'
-    ];
+
+    // Stats
+    public $totalAlat;
+    public $totalPenjualan;
+    public $rataRataHarga;
+
+    protected $listeners = ['delete-data' => 'delete'];
+    protected $paginationTheme = 'tailwind';
+
     public function mount()
     {
         $this->loadAlat();
-        $this->loadData();
         $this->tanggal = now()->format('Y-m-d');
+    }
+
+    public function searchData()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
     }
 
     public function loadAlat()
@@ -58,25 +80,6 @@ class PenjualanAlat extends Component
         $this->alatList = collect($this->alatData)
             ->mapWithKeys(fn($a, $id) => [$id => $a['nama']])
             ->toArray();
-    }
-
-    public function loadData()
-    {
-        $this->rows = Penjualan::with('alat')->latest()->get()->map(function ($item, $i) {
-            return [
-                'id' => $item->id,
-                'no' => $i + 1,
-                'tanggal' => Carbon::parse($item->tanggal_penjualan)->format('d/m/Y'),
-                'nama_alat' => $item->alat->nama_alat,
-                'jumlah' => $item->jumlah,
-                'gambar' => $item->gambar,
-                'harga' => 'Rp. ' . number_format($item->harga_jual, 0, ',', '.'),
-            ];
-        })->toArray();
-
-        $this->totalAlat = Penjualan::sum('jumlah');
-        $this->totalPenjualan = Penjualan::sum('harga_jual');
-        $this->rataRataHarga = Penjualan::avg('harga_jual');
     }
 
     public function openModal()
@@ -99,6 +102,7 @@ class PenjualanAlat extends Component
         $this->gambar = null;
         $this->harga_satuan = 0;
         $this->harga_total = 0;
+        $this->customer = '';
     }
 
     public function updatedAlatId()
@@ -110,10 +114,8 @@ class PenjualanAlat extends Component
     {
         if ($this->jumlah < 1)
             $this->jumlah = 1;
-        if ($this->jumlah > $this->stok_tersedia) {
+        if ($this->jumlah > $this->stok_tersedia)
             $this->jumlah = $this->stok_tersedia;
-        }
-
         $this->hitungHarga();
     }
 
@@ -122,17 +124,15 @@ class PenjualanAlat extends Component
         if (!$this->alat_id || !isset($this->alatData[$this->alat_id])) {
             $this->stok_tersedia = 0;
             $this->harga_satuan = 0;
-            $this->harga_total = 0;
             $this->jumlah = 1;
+            $this->harga_total = 0;
             return;
         }
 
         $alat = $this->alatData[$this->alat_id];
-
         $this->stok_tersedia = $alat['stok'];
         $this->harga_satuan = $alat['harga'];
         $this->jumlah = 1;
-
         $this->hitungHarga();
     }
 
@@ -164,33 +164,46 @@ class PenjualanAlat extends Component
 
         $alat->decrement('jumlah_alat', $this->jumlah);
 
-        $this->dispatch(
-            'toast',
-            type: 'success',
-            message: 'Log penjualan berhasil ditambahkan'
-        );
-
+        $this->dispatch('toast', type: 'success', message: 'Log penjualan berhasil ditambahkan');
         $this->closeModal();
-        $this->loadData();
         $this->loadAlat();
     }
 
     public function delete($id)
     {
-        $Penjualan = Penjualan::findOrFail($id);
-
-        $Penjualan->delete();
-        $this->loadData();
-        $this->dispatch(
-            'toast',
-            type: 'success',
-            message: 'Log penjualan berhasil dihapus'
-        );
+        $penjualan = Penjualan::findOrFail($id);
+        $penjualan->delete();
+        $this->dispatch('toast', type: 'success', message: 'Log penjualan berhasil dihapus');
     }
 
     #[Layout('layouts.app')]
     public function render()
     {
-        return view('livewire.admin.penjualan-alat');
+        $penjualan = Penjualan::with('alat')
+            ->whereHas('alat', fn($q) => $q->where('nama_alat', 'like', "%{$this->search}%"))
+            ->orWhere('customer', 'like', "%{$this->search}%")
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate(10);
+
+        // Transform data untuk tabel
+        $tableRows = $penjualan->through(function ($item, $index) use ($penjualan) {
+            return [
+                'id' => $item->id,
+                'no' => $index + 1 + ($penjualan->currentPage() - 1) * $penjualan->perPage(),
+                'tanggal' => Carbon::parse($item->tanggal_penjualan)->format('d/m/Y'),
+                'nama_alat' => $item->alat->nama_alat,
+                'jumlah' => $item->jumlah,
+                'harga' => 'Rp. ' . number_format($item->harga_jual, 0, ',', '.'),
+            ];
+        });
+
+        $this->totalAlat = Penjualan::sum('jumlah');
+        $this->totalPenjualan = Penjualan::sum('harga_jual');
+        $this->rataRataHarga = Penjualan::avg('harga_jual');
+
+        return view('livewire.admin.penjualan-alat', [
+            'rows' => $tableRows,
+            'pagination' => $penjualan,
+        ]);
     }
 }
