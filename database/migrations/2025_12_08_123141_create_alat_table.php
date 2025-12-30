@@ -12,20 +12,21 @@ return new class extends Migration {
     {
         Schema::create('alat', function (Blueprint $table) {
             $table->id();
-            $table->softDeletes();
-            $table->string('gambar')->nullable();
-            $table->string('nama_alat');
+
+            $table->string('nama_alat')->unique();
             $table->integer('jumlah_alat')->default(0);
             $table->bigInteger('harga')->nullable();
-
             $table->enum('status', [
                 'tersedia',
                 'sedang_digunakan',
                 'dalam_perawatan',
                 'rusak'
-            ])->default('tersedia');
+                ])->default('tersedia');
+                
+           $table->string('gambar')->nullable();
 
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

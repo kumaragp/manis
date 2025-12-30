@@ -14,15 +14,14 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('alat_id')->constrained('alat')->onDelete('cascade');
             $table->foreignId('karyawan_id')->constrained('users')->onDelete('cascade');
-
+            
+            $table->integer('jumlah');
             $table->enum('status', [
                 'sedang_digunakan',
                 'dalam_perawatan',
                 'rusak',
                 'selesai',
             ])->default('sedang_digunakan');
-
-            $table->integer('jumlah');
             $table->dateTime('tanggal_pinjam');
             $table->dateTime('tanggal_kembali')->nullable();
 

@@ -1,4 +1,4 @@
-<div class="fixed top-16 left-0 right-0 z-40 flex justify-center pt-10" >
+<div class="fixed top-16 left-0 right-0 z-40 flex justify-center pt-16" >
     <div class="inline-flex rounded-full bg-[#0A3B65] p-1.5 shadow-lg">
         <a href="{{ route('daftarAlatKaryawan') }}"
            data-page="riwayat"

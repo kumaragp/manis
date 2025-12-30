@@ -12,62 +12,62 @@
 <div class="flex space-x-2">
 
     <!-- Tombol Edit -->
-    @if($editRoute && in_array('edit', $allowedActions))
-        <a href="{{ route($editRoute, [$idField => $row[$idField]]) }}"
-           class="inline-flex items-center space-x-2 bg-[#55A0FF] hover:bg-[#3B8FE0] 
-                  text-[#0A3B65] font-bold px-6 py-2 rounded-full shadow-md 
-                  transition duration-200">
-            <span>Edit</span>
-            <i class="fa-solid fa-pen text-lg"></i>
-        </a>
+    @if(in_array('edit', $allowedActions))
+        @if(($row['can_edit'] ?? true))
+            <button wire:click="openModal({{ $row[$idField] }})"
+                class="inline-flex items-center space-x-2 bg-[#55A0FF] hover:bg-[#3B8FE0] 
+                text-[#0A3B65] font-bold px-6 py-2 rounded-full shadow-md transition">
+                <span>Edit</span>
+                <i class="fa-solid fa-pen text-lg"></i>
+            </button>
+         @else
+             <button
+                disabled
+                title="Perawatan sudah diperbaiki"
+                class="inline-flex items-center space-x-2 bg-gray-400 
+              text-white font-bold px-6 py-2 rounded-full shadow-md cursor-not-allowed">
+                <span>Edit</span>
+                <i class="fa-solid fa-lock text-lg"></i>
+            </button>
+        @endif
     @endif
 
     <!-- Tombol Hapus -->
-    @if($deleteRoute && in_array('delete', $allowedActions))
-        <form action="{{ route($deleteRoute, [$idField => $row[$idField]]) }}" 
-              method="POST">
-            @csrf
-            @method('DELETE')
+    @if(in_array('delete', $allowedActions))
+        <button
+            wire:click="$dispatch('confirm-delete', { id: {{ $row[$idField] }} })"
+            class="inline-flex items-center space-x-2 bg-red-500 px-4 py-2 rounded-full hover:bg-red-600 transition">
+            <span>Hapus</span>
+            <i class="fa-solid fa-trash text-lg"></i>
+        </button>
+    @endif
 
-            <button type="button" class="delete-btn inline-flex items-center space-x-2 bg-red-500 px-4 py-2 rounded-full hover:bg-red-600 transition duration-200">
-                <span>Hapus</span>
-                <i class="fa-solid fa-trash"></i>
-            </button>
-        </form>
+     <!-- Tombol Reset -->
+    @if(in_array('reset', $allowedActions))
+        <button wire:click="resetToken({{ $row[$idField] }})"
+            class="inline-flex items-center space-x-2 bg-yellow-500 px-4 py-2 rounded-full hover:bg-yellow-600 transition">
+            <span>Reset</span>
+            <i class="fa-solid fa-rotate-right text-lg"></i>
+        </button>
     @endif
 
     <!-- Tombol Report -->
-    @if($reportRoute && in_array('report', $allowedActions))
-        <a href="{{ route($reportRoute, $row[$idField]) }}"
-        class="inline-flex items-center space-x-2 bg-yellow-500 px-4 py-2 rounded-full 
-                hover:bg-yellow-600 transition duration-200">
+   @if(in_array('report', $allowedActions))
+        <button wire:click="openPelaporan({{ $row[$idField] }})"
+            class="inline-flex items-center space-x-2 bg-yellow-500 px-4 py-2 rounded-full
+                hover:bg-yellow-600 transition">
             <span>Report</span>
-            <i class="fa-solid fa-triangle-exclamation"></i>
-        </a>
-    @endif
-    
-    <!-- Tombol Reset -->
-    @if ($resetRoute && in_array('reset', $allowedActions))
-        <form action="{{ route($resetRoute, [$row[$idField]]) }}" 
-            method="POST">
-            @csrf
-
-            <button class="inline-flex items-center space-x-2 bg-yellow-500 px-4 py-2 rounded-full 
-                        hover:bg-yellow-600 transition duration-200">
-                <span>Reset</span>
-                <i class="fa-solid fa-rotate-right"></i>
-            </button>
-        </form>
+            <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+        </button>
     @endif
 
     <!-- Tombol Return -->
-    @if($returnRoute && in_array('return', $allowedActions))
-        <a href="{{ route($returnRoute, $row[$idField]) }}"
-        class="inline-flex items-center space-x-2 bg-green-600 px-4 py-2 rounded-full 
-                hover:bg-green-700 transition duration-200">
+    @if(in_array('return', $allowedActions))
+        <button wire:click="openPengembalian({{ $row[$idField] }})"
+            class="inline-flex items-center space-x-2 bg-green-600 px-4 py-2 rounded-full
+                hover:bg-green-700 transition">
             <span>Return</span>
-            <i class="fa-solid fa-rotate-left"></i>
-        </a>
+            <i class="fa-solid fa-rotate-left text-lg"></i>
+        </button>
     @endif
-
 </div>

@@ -12,7 +12,8 @@ return new class extends Migration {
     {
         Schema::create('pengadaan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('alat_id')->constrained('alat')->onDelete('cascade');
+            $table->foreignId('alat_id')->nullable()->constrained('alat')->onDelete('cascade');
+
             $table->string('nama_alat');
             $table->date('tanggal_pengadaan');
             $table->string('vendor')->nullable();

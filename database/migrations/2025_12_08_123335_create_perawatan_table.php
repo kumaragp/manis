@@ -16,13 +16,11 @@ return new class extends Migration {
 
             $table->date('tanggal');
             $table->integer('jumlah')->default(1);
-
             $table->enum('status', [
                 'rusak',
                 'dalam_perawatan',
                 'diperbaiki'
             ])->default('rusak');
-
             $table->string('teknisi')->nullable();
             $table->text('deskripsi')->nullable();
 

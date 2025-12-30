@@ -1,0 +1,179 @@
+<?php
+
+namespace App\Livewire\Admin;
+
+use Livewire\Component;
+use App\Models\Alat;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Str;
+use Livewire\Attributes\Layout;
+
+class DaftarAlat extends Component
+{
+    use WithFileUploads;
+
+    public $columns = ['No', 'Alat', 'Jumlah', 'Harga Satuan', 'Status'];
+    public $rows = [];
+
+    public $isOpen = false;
+    public $alatId;
+    public $nama_alat;
+    public $jumlah_alat;
+    public $harga;
+    public $gambar;
+    public $isEdit = false;
+
+    protected $listeners = [
+        'delete-data' => 'delete'
+    ];
+
+    public function mount()
+    {
+        $this->loadData();
+    }
+
+    public function loadData()
+    {
+        $this->rows = Alat::all()->map(function ($item, $index) {
+            return [
+                'id' => $item->id,
+                'no' => $index + 1,
+                'nama_alat' => $item->nama_alat,
+                'jumlah_alat' => $item->jumlah_alat == 0 ? 'STOK HABIS' : $item->jumlah_alat,
+                'harga' => 'Rp.' . number_format($item->harga, 0, ',', '.'),
+                'status' => Str::upper(str_replace('_', ' ', $item->status)),
+                'gambar' => $item->gambar
+            ];
+        })->toArray();
+    }
+
+    public function openModal($id = null)
+    {
+        $this->resetForm();
+        $this->isEdit = false;
+
+        if ($id) {
+            $alat = Alat::find($id);
+            if ($alat) {
+                $this->alatId = $alat->id;
+                $this->nama_alat = $alat->nama_alat;
+                $this->jumlah_alat = $alat->jumlah_alat;
+                $this->harga = $alat->harga;
+                $this->isEdit = true;
+            }
+        }
+
+        $this->isOpen = true;
+    }
+
+    public function closeModal()
+    {
+        $this->isOpen = false;
+    }
+
+    public function resetForm()
+    {
+        $this->alatId = null;
+        $this->nama_alat = '';
+        $this->jumlah_alat = '';
+        $this->harga = '';
+        $this->gambar = null;
+    }
+
+    public function save()
+    {
+        $this->validate([
+            'nama_alat' => 'required|string',
+            'jumlah_alat' => 'required|integer|min:0',
+            'harga' => 'nullable|integer',
+            'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        try {
+            if ($this->isEdit && $this->alatId) {
+                $alat = Alat::findOrFail($this->alatId);
+
+                $data = [
+                    'nama_alat' => $this->nama_alat,
+                    'jumlah_alat' => $this->jumlah_alat,
+                    'harga' => $this->harga,
+                ];
+
+                if ($this->gambar) {
+                    if ($alat->gambar && Storage::disk('public')->exists($alat->gambar)) {
+                        Storage::disk('public')->delete($alat->gambar);
+                    }
+
+                    $data['gambar'] = $this->gambar->store('alat', 'public');
+                }
+
+                $alat->update($data);
+                $message = 'Alat berhasil diperbarui';
+
+            } else {
+                $data = [
+                    'nama_alat' => $this->nama_alat,
+                    'jumlah_alat' => $this->jumlah_alat,
+                    'harga' => $this->harga,
+                ];
+
+                if ($this->gambar) {
+                    $data['gambar'] = $this->gambar->store('alat', 'public');
+                }
+
+                Alat::create($data);
+                $message = 'Alat berhasil ditambahkan';
+            }
+
+            $this->dispatch(
+                'toast',
+                type: 'success',
+                message: $message
+            );
+
+            $this->closeModal();
+            $this->resetForm();
+            $this->loadData();
+
+        } catch (QueryException $e) {
+            if ($e->errorInfo[1] == 1062) {
+                $this->dispatch(
+                    'toast',
+                    type: 'error',
+                    message: 'Nama alat sudah terdaftar'
+                );
+                return;
+            }
+
+            throw $e;
+        }
+    }
+
+    public function delete($id)
+    {
+        $alat = Alat::find($id);
+
+        if ($alat) {
+            if ($alat->gambar) {
+                Storage::disk('public')->delete($alat->gambar);
+            }
+
+            $alat->delete();
+            $this->loadData();
+
+            $this->dispatch(
+                event: 'toast',
+                type: 'success',
+                message: 'Alat berhasil dihapus'
+            );
+        }
+    }
+
+    #[Layout('layouts.app')]
+    public function render()
+    {
+        return view('livewire.admin.daftar-alat');
+    }
+}

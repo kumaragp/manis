@@ -42,17 +42,6 @@
                 <x-input-error :messages="$errors->get('password')" class="mt-2 text-white" />
             </div>
 
-            {{-- Links --}}
-            <div class="mt-4 flex justify-between">
-                <a href="{{ route('register') }}" class="text-white text-right text-sm hover:underline">
-                    {{ __('Belum Punya Akun?') }}
-                </a>
-                <a href="{{ route('password.request') }}" class="text-white text-left text-sm hover:underline">
-                    {{ __('Lupa Kata Sandi?') }}
-                </a>
-            </div>
-
-            {{-- Submit --}}
             <div class="mt-4 flex justify-center">
                 <x-primary-button class="flex justify-center">
                     {{ __('MASUK') }}
