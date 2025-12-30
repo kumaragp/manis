@@ -12,11 +12,13 @@ return new class extends Migration {
     {
         Schema::create('penjualan', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('alat_id')->constrained('alat')->onDelete('cascade');
-            $table->date('tanggal_penjualan');
-            $table->string('pembeli');
             $table->integer('jumlah');
             $table->bigInteger('harga_jual');
+            $table->string('customer');
+            $table->date('tanggal_penjualan');
+            $table->string('gambar')->nullable();
 
             $table->timestamps();
         });

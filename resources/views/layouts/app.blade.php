@@ -7,11 +7,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Manis') }}</title>
 
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 
 <body class="font-sans antialiased overflow-x-hidden" x-data="{ sidebarOpen: false }">
@@ -56,19 +56,20 @@
 
         @endif
 
-        <main class="{{ Auth::user()->role === 'admin' ? 'flex-1' : 'w-full' }} pt-16 px-6 overflow-x-hidden {{ Auth::user()->role === 'karyawan' ? 'pt-28' : '' }}">
+        <main
+            class="{{ Auth::user()->role === 'admin' ? 'flex-1' : 'w-full' }} pt-16 px-6 overflow-x-hidden {{ Auth::user()->role === 'karyawan' ? 'pt-28' : '' }}">
             <div class="w-full">
                 {{ $slot }}
             </div>
         </main>
     </div>
-
+    @livewireScripts
 </body>
 
 <!-- Autofill Data -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const alatData = window.alatData ?? @json($alatList->keyBy('nama_alat') ?? []);
+        const alatData = window.alatData ?? @json(isset($alatList) ? $alatList->keyBy('nama_alat') : []);
         const alatSelect = document.getElementById('namaAlat');
         const jumlahInput = document.getElementById('jumlahInput');
         const hargaInput = document.getElementById('hargaInput');
@@ -110,48 +111,35 @@
 
 <!-- Request Suggestion -->
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.addEventListener('click', function (e) {
-            if (e.target.closest('.delete-btn')) {
-                e.preventDefault();
-                const form = e.target.closest('form');
-                if (!form) return;
-
-                Swal.fire({
-                    title: 'Yakin ingin menghapus data ini?',
-                    text: "Tindakan ini tidak bisa dibatalkan!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Ya, hapus!',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            }
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('confirm-delete', ({ id }) => {
+            Swal.fire({
+                title: 'Yakin ingin menghapus?',
+                text: 'Tindakan ini tidak bisa dibatalkan!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Livewire.dispatch('delete-data', { id });
+                }
+            });
         });
-
-        document.addEventListener('click', function (e) {
-            if (e.target.closest('.save-btn')) {
-                const form = e.target.closest('form');
-                if (form) form.submit();
-            }
-        });
-
-        @if(session('success'))
+        Livewire.on('toast', (data) => {
             Swal.fire({
                 toast: true,
                 position: 'top-end',
-                icon: 'success',
-                title: "{{ session('success') }}",
+                icon: data.type,
+                title: data.message,
                 showConfirmButton: false,
                 timer: 3000,
                 timerProgressBar: true
             });
-        @endif
+        });
+
     });
 </script>
 

@@ -48,7 +48,7 @@
                 @foreach ($rows as $row)
                     <tr class="{{ $hoverBg }} transition duration-200">
                         @foreach ($row as $key => $cell)
-                            @if ($key !== 'id' && $key !== 'gambar')
+                            @if ($key !== 'id' && $key !== 'gambar' && $key !== 'can_edit')
                                 <td class="py-3 px-3 text-lg whitespace-nowrap">
                                     {{ $cell }}
                                 </td>

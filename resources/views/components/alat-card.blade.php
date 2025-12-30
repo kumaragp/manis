@@ -5,11 +5,10 @@
     'status',
     'stok' => 0,
 ])
-
 @php
     $finalStatus = $stok == 0 ? 'STOK HABIS' : $status;
 
-    $statusColor = match($finalStatus) {
+    $statusColor = match ($finalStatus) {
         'TERSEDIA' => 'bg-green-500',
         'DIGUNAKAN', 'SEDANG DIGUNAKAN' => 'bg-yellow-500',
         'DALAM PERAWATAN' => 'bg-blue-500',
@@ -20,33 +19,25 @@
 
 <div class="bg-[#8B7355] rounded-2xl p-4 shadow-xl hover:shadow-2xl transition duration-300 h-full">
     <div class="flex gap-4">
-        <div class="bg-white rounded-xl w-40 h-40 overflow-hidden flex items-center justify-center">
-            <img src="{{ Storage::url($gambar) }}" class="w-full h-full object-cover" />
-        </div>
+        @if (!empty($gambar))
+            <div class="bg-white rounded-xl w-40 h-40 overflow-hidden flex items-center justify-center">
+                <img src="{{ asset('storage/' . $gambar) }}">
+            </div>
+        @else
+            <div class="bg-white rounded-xl w-40 h-40 overflow-hidden flex items-center justify-center">
+                <i class="fa-regular fa-image text-6xl"></i>
+            </div>
+        @endif
 
         <div class="flex-1 flex flex-col justify-center items-start gap-3 py-2">
             <span class="{{ $statusColor }} text-white text-xs font-bold px-4 py-1 rounded-full uppercase">
                 {{ $finalStatus }}
             </span>
-            <h3 class="text-white font-bold leading-tight">
-                {{ $nama }}
-            </h3>
-            <p class="text-white/80 text-sm">
-                Stok: <span class="font-semibold">{{ $stok }}</span>
-            </p>
+            <h3 class="text-white font-bold leading-tight">{{ $nama }}</h3>
+            <p class="text-white/80 text-sm">Stok: <span class="font-semibold">{{ $stok }}</span></p>
+
             <div class="flex gap-3 mt-1">
-                <a href="{{ route('peminjamanAlat', ['id' => $id]) }}"
-                class="bg-white hover:bg-gray-100 text-[#8B7355]
-                        rounded-full w-10 h-10 flex items-center justify-center
-                        shadow-md transition">
-                    <i class="fa-solid fa-hand-holding-hand text-xl"></i>
-                </a>
-                <a href="{{ route('pelaporanAlat', ['id' => $id]) }}"
-                   class="bg-white hover:bg-gray-100 text-[#8B7355]
-                          rounded-full w-10 h-10 flex items-center justify-center
-                          shadow-md transition">
-                    <i class="fa-solid fa-circle-exclamation text-xl"></i>
-                </a>
+                {{ $slot }}
             </div>
         </div>
     </div>

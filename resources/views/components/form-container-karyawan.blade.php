@@ -17,8 +17,8 @@
     </h1>
 @endif
 
-<div class="{{ $bgColor }} p-8 rounded-2xl shadow-2xl text-white">
-    <form action="{{ $action }}" method="POST">
+<div class="{{ $bgColor }} w-full max-w-3xl p-8 rounded-2xl shadow-xl text-white">
+    <form {{ $attributes }} method="POST">
         @csrf
         
         @if(!in_array(strtoupper($method), ['GET', 'POST']))
@@ -38,7 +38,7 @@
                 <i class="fa-solid {{ $submitIcon }} text-lg"></i>
             </button>
 
-            <a href="{{ url()->previous() }}"
+            <a wire:click="resetModal"
                 class="inline-flex items-center space-x-2 bg-red-500 hover:bg-red-600
                        text-white font-bold px-6 py-2.5 rounded-full shadow-lg transition">
 

@@ -5,7 +5,7 @@ $menuItems = [
     ['route' => 'pengadaanAlat', 'icon' => 'fa-boxes-stacked', 'label' => 'Pengadaan Alat'],
     ['route' => 'penjualanAlat', 'icon' => 'fa-cart-shopping', 'label' => 'Penjualan Alat'],
     ['route' => 'perawatanAlat', 'icon' => 'fa-screwdriver-wrench', 'label' => 'Perawatan Alat'],
-    ['route' => 'admin.karyawan', 'icon' => 'fa-users', 'label' => 'Daftar Karyawan'],
+    ['route' => 'daftarKaryawan', 'icon' => 'fa-users', 'label' => 'Daftar Karyawan'],
     ['route' => 'logout', 'icon' => 'fa-right-from-bracket', 'label' => 'Logout']
 ];
 @endphp

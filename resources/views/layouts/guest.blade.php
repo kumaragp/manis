@@ -28,43 +28,68 @@
 
 </head>
 
-<body class="font-inter antialiased overflow-y-hidden background-change" id="background-body">
+<body class="font-inter antialiased overflow-hidden relative bg-neutral-900">
 
-    {{-- Header --}}
-    <div class="top-0 w-full bg-[#B28A52] py-2 flex justify-center items-center z-10">
+    <div id="bg1" class="fixed inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out">
+    </div>
+
+    <div id="bg2" class="fixed inset-0 bg-cover bg-center opacity-0 transition-opacity duration-1000 ease-in-out">
+    </div>
+
+    <div class="fixed inset-0 bg-black/20"></div>
+
+    <header class="relative z-20 w-full bg-[#B28A52] py-2 flex justify-center items-center">
         <div class="flex items-center">
-            <a href="{{ route("home") }}">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo Kawasan Industri Terpadu Batang" class="w-20 mr-3 mb-1">
+            <a href="{{ route('home') }}">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo Kawasan Industri Terpadu Batang"
+                    class="w-20 mr-3 mb-1">
             </a>
-            <h1 class="text-white font-bold text-xl">KAWASAN <br> INDUSTRI TERPADU<br>BATANG</h1>
+            <h1 class="text-white font-bold text-xl leading-tight">
+                KAWASAN <br> INDUSTRI TERPADU<br>BATANG
+            </h1>
         </div>
-    </div>
+    </header>
 
-    {{-- Content slot --}}
-    <div class="min-h-screen flex flex-col items-center justify-center">
+    <main class="relative z-20 min-h-screen flex flex-col items-center justify-center">
         {{ $slot }}
-    </div>
+    </main>
 
-    <script>
-        const images = [
-            '{{ asset('images/bg1.webp') }}',
-            '{{ asset('images/bg2.webp') }}',
-            '{{ asset('images/bg3.webp') }}'
-        ];
-
-        let currentIndex = 0;
-        const body = document.getElementById('background-body');
-        const intervalTime = 5000;
-
-        function changeBackground() {
-            body.style.backgroundImage = `url('${images[currentIndex]}')`;
-            currentIndex = (currentIndex + 1) % images.length;
-        }
-
-        changeBackground();
-        setInterval(changeBackground, intervalTime);
-    </script>
 </body>
+
+
+<script>
+    const images = [
+        "{{ asset('images/bg1.webp') }}",
+        "{{ asset('images/bg2.webp') }}",
+        "{{ asset('images/bg3.webp') }}"
+    ];
+
+    // PRELOAD
+    images.forEach(src => {
+        const img = new Image();
+        img.src = src;
+    });
+
+    let index = 1;
+    let active = 1;
+
+    const bg1 = document.getElementById('bg1');
+    const bg2 = document.getElementById('bg2');
+
+    bg1.style.backgroundImage = `url('${images[0]}')`;
+
+    setInterval(() => {
+        const current = active === 1 ? bg1 : bg2;
+        const next = active === 1 ? bg2 : bg1;
+
+        next.style.backgroundImage = `url('${images[index]}')`;
+        next.classList.remove('opacity-0');
+        current.classList.add('opacity-0');
+
+        active = active === 1 ? 2 : 1;
+        index = (index + 1) % images.length;
+    }, 5000);
+</script>
 
 <!-- Icon Mata -->
 <script defer>
