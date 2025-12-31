@@ -5,11 +5,25 @@
         </h1>
 
         <div class="w-full max-w-7xl mx-auto">
+
+            <div class="mb-6 flex justify-center lg:justify-start">
+                <div class="relative w-full">
+                    <input type="text" wire:model.defer="search" wire:keydown.enter="searchData"
+                        placeholder="Cari nama alat..." class="w-full pr-10 px-4 py-3 rounded-lg border
+                   focus:outline-none focus:ring-2 focus:ring-blue-500" />
+
+                    <i class="fa-solid fa-magnifying-glass
+           absolute right-3 top-1/2 -translate-y-1/2
+           text-gray-400 pointer-events-none"></i>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
                 @foreach($alatList as $item)
                     <div wire:key="alat-{{ $item['id'] }}">
                         <x-alat-card :id="$item['id']" :nama="$item['nama']" :gambar="$item['gambar']"
                             :status="$item['status']" :stok="$item['stok']">
+
                             <button wire:click="openPeminjaman({{ $item['id'] }})"
                                 class="bg-white rounded-full w-10 h-10 flex items-center justify-center">
                                 <i class="fa-solid fa-hand-holding-hand"></i>
@@ -19,6 +33,7 @@
                                 class="bg-white rounded-full w-10 h-10 flex items-center justify-center">
                                 <i class="fa-solid fa-circle-exclamation"></i>
                             </button>
+
                         </x-alat-card>
                     </div>
                 @endforeach

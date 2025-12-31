@@ -17,6 +17,7 @@ class DaftarAlatKaryawan extends Component
     public $jumlah;
     public $keterangan;
     public $tanggal;
+    public $search = ''; // properti search
 
     protected $listeners = [
         'openPeminjaman' => 'openPeminjaman',
@@ -30,15 +31,32 @@ class DaftarAlatKaryawan extends Component
 
     public function loadAlat()
     {
-        $this->alatList = Alat::all()->map(function ($alat) {
+        $query = Alat::query();
+
+        if ($this->search) {
+            $query->where('nama_alat', 'like', '%' . $this->search . '%');
+        }
+
+        $this->alatList = $query->get()->map(function ($alat) {
             return [
                 'id' => $alat->id,
                 'nama' => $alat->nama_alat,
                 'status' => Str::upper(str_replace('_', ' ', $alat->status)),
                 'stok' => $alat->jumlah_alat,
-                'gambar' => $alat -> gambar,
+                'gambar' => $alat->gambar,
             ];
         })->toArray();
+    }
+
+    public function searchData()
+    {
+        $this->loadAlat();
+    }
+
+    public function updatedSearch()
+    {
+        // reload alat saat search berubah
+        $this->loadAlat();
     }
 
     public function openPeminjaman($id)
@@ -73,13 +91,8 @@ class DaftarAlatKaryawan extends Component
 
         $this->selectedAlat->jumlah_alat -= $this->jumlah;
         $this->selectedAlat->save();
-        $message = 'Alat berhasil dipinjam';
 
-        $this->dispatch(
-            'toast',
-            type: 'success',
-            message: $message
-        );
+        $this->dispatch('toast', type: 'success', message: 'Alat berhasil dipinjam');
 
         $this->resetModal();
         $this->loadAlat();
@@ -106,13 +119,8 @@ class DaftarAlatKaryawan extends Component
             'deskripsi' => $this->keterangan,
             'teknisi' => null,
         ]);
-        $message = 'Alat berhasil dilaporkan';
 
-        $this->dispatch(
-            'toast',
-            type: 'success',
-            message: $message
-        );
+        $this->dispatch('toast', type: 'success', message: 'Alat berhasil dilaporkan');
 
         $this->resetModal();
         $this->loadAlat();
@@ -130,6 +138,8 @@ class DaftarAlatKaryawan extends Component
     #[Layout('layouts.app')]
     public function render()
     {
-        return view('livewire.admin.daftar-alat-karyawan');
+        return view('livewire.karyawan.daftar-alat-karyawan', [
+            'alatList' => $this->alatList,
+        ]);
     }
 }

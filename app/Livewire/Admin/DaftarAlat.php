@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use App\Models\Alat;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
@@ -12,11 +13,9 @@ use Livewire\Attributes\Layout;
 
 class DaftarAlat extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     public $columns = ['No', 'Alat', 'Jumlah', 'Harga Satuan', 'Status'];
-    public $rows = [];
-
     public $isOpen = false;
     public $alatId;
     public $nama_alat;
@@ -25,28 +24,34 @@ class DaftarAlat extends Component
     public $gambar;
     public $isEdit = false;
 
+    public $search = '';
+    public $sortField = 'created_at';
+    public $sortDirection = 'desc';
+
     protected $listeners = [
         'delete-data' => 'delete'
     ];
 
-    public function mount()
+    protected $paginationTheme = 'tailwind';
+
+    public function searchData()
     {
-        $this->loadData();
+        $this->resetPage();
     }
 
-    public function loadData()
+    public function updatingSearch()
     {
-        $this->rows = Alat::all()->map(function ($item, $index) {
-            return [
-                'id' => $item->id,
-                'no' => $index + 1,
-                'nama_alat' => $item->nama_alat,
-                'jumlah_alat' => $item->jumlah_alat == 0 ? 'STOK HABIS' : $item->jumlah_alat,
-                'harga' => 'Rp.' . number_format($item->harga, 0, ',', '.'),
-                'status' => Str::upper(str_replace('_', ' ', $item->status)),
-                'gambar' => $item->gambar
-            ];
-        })->toArray();
+        $this->resetPage();
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
     }
 
     public function openModal($id = null)
@@ -111,7 +116,6 @@ class DaftarAlat extends Component
 
                 $alat->update($data);
                 $message = 'Alat berhasil diperbarui';
-
             } else {
                 $data = [
                     'nama_alat' => $this->nama_alat,
@@ -127,26 +131,14 @@ class DaftarAlat extends Component
                 $message = 'Alat berhasil ditambahkan';
             }
 
-            $this->dispatch(
-                'toast',
-                type: 'success',
-                message: $message
-            );
-
+            $this->dispatch('toast', type: 'success', message: $message);
             $this->closeModal();
             $this->resetForm();
-            $this->loadData();
-
         } catch (QueryException $e) {
             if ($e->errorInfo[1] == 1062) {
-                $this->dispatch(
-                    'toast',
-                    type: 'error',
-                    message: 'Nama alat sudah terdaftar'
-                );
+                $this->dispatch('toast', type: 'error', message: 'Nama alat sudah terdaftar');
                 return;
             }
-
             throw $e;
         }
     }
@@ -161,19 +153,34 @@ class DaftarAlat extends Component
             }
 
             $alat->delete();
-            $this->loadData();
-
-            $this->dispatch(
-                event: 'toast',
-                type: 'success',
-                message: 'Alat berhasil dihapus'
-            );
+            $this->dispatch('toast', type: 'success', message: 'Alat berhasil dihapus');
         }
     }
 
     #[Layout('layouts.app')]
     public function render()
     {
-        return view('livewire.admin.daftar-alat');
+        $rows = Alat::query()
+            ->where('nama_alat', 'like', "%{$this->search}%")
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate(10);
+
+        // Transform data untuk tabel
+        $tableRows = $rows->through(function ($item, $index) use ($rows) {
+            return [
+                'id' => $item->id,
+                'no' => $index + 1 + ($rows->currentPage() - 1) * $rows->perPage(),
+                'nama_alat' => $item->nama_alat,
+                'jumlah_alat' => $item->jumlah_alat == 0 ? 'STOK HABIS' : $item->jumlah_alat,
+                'harga' => 'Rp.' . number_format($item->harga, 0, ',', '.'),
+                'status' => Str::upper(str_replace('_', ' ', $item->status)),
+                'gambar' => $item->gambar,
+            ];
+        });
+
+        return view('livewire.admin.daftar-alat', [
+            'rows' => $tableRows,
+            'pagination' => $rows,
+        ]);
     }
 }

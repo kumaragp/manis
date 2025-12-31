@@ -1,4 +1,4 @@
-@props(['columns', 'rows', 'rowActions' => null, 'rowActionsParams' => []])
+@props(['columns', 'rows', 'rowActions' => null, 'rowActionsParams' => [], 'pagination' => null, 'searchField' => 'nama_alat', 'sortField' => null, 'sortDirection' => null])
 
 @php
     $role = Auth::user()->role ?? 'admin';
@@ -9,30 +9,36 @@
     $hoverBg = $role === 'karyawan' ? 'hover:bg-[#8B7355]/50' : 'hover:bg-[#1A2C4D]/70';
 @endphp
 
-<h1 class="text-3xl font-extrabold text-white mb-6 border-b border-white/20 pb-4 pt-16">
+<h1 class="text-3xl font-extrabold text-white mb-6 border-b border-white/20 pb-4 mt-12">
     {{ $slot ?? 'Tabel' }}
 </h1>
 
 @if (isset($actions))
-    <div class="flex justify-end mb-4">
+    <div class="w-full mb-4">
         {{ $actions }}
     </div>
 @endif
 
 <!-- Tabel -->
 <div class="{{ $bgTable }} p-2 sm:p-6 rounded-2xl shadow-2xl max-w-full">
-
-    <!-- Wrapper -->
     <div class="relative overflow-x-auto w-full">
-
-        <table class="min-w-max w-full text-center {{ $textColor }}
-                   border-collapse table-auto whitespace-nowrap">
-
+        <table class="min-w-max w-full text-center {{ $textColor }} border-collapse table-auto whitespace-nowrap">
             <thead>
-                <tr class="uppercase text-sm font-bold tracking-wide">
+                <tr class="uppercase text-sm font-bold tracking-wide cursor-pointer">
                     @foreach ($columns as $col)
-                        <th class="py-3 px-3 text-base whitespace-nowrap">
-                            {{ $col }}
+                        <th class="py-3 px-3 text-base whitespace-nowrap" @if($loop->index > 0 && $loop->index <= count($columns)) wire:click="$emit('sortBy', '{{ \Str::snake($col) }}')" @endif>
+                            <div class="flex items-center justify-center space-x-1">
+                                <span>{{ $col }}</span>
+                                @if($sortField === \Str::snake($col))
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        @if($sortDirection === 'asc')
+                                            <path d="M5 15l5-5 5 5H5z" />
+                                        @else
+                                            <path d="M5 5l5 5 5-5H5z" />
+                                        @endif
+                                    </svg>
+                                @endif
+                            </div>
                         </th>
                     @endforeach
 
@@ -45,7 +51,7 @@
             </thead>
 
             <tbody>
-                @foreach ($rows as $row)
+                @forelse ($rows as $row)
                     <tr class="{{ $hoverBg }} transition duration-200">
                         @foreach ($row as $key => $cell)
                             @if ($key !== 'id' && $key !== 'gambar' && $key !== 'can_edit')
@@ -70,9 +76,21 @@
                             </td>
                         @endif
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="{{ count($columns) + ($rowActions ? 1 : 0) }}" class="py-4 text-center text-gray-300">
+                            Tidak ada data
+                        </td>
+                    </tr>
+                @endforelse
             </tbody>
-
         </table>
     </div>
+
+    <!-- Pagination -->
+    @if($pagination)
+        <div class="mt-4">
+            {{ $pagination->links() }}
+        </div>
+    @endif
 </div>

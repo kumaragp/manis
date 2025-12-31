@@ -14,7 +14,7 @@
     @livewireStyles
 </head>
 
-<body class="font-sans antialiased overflow-x-hidden" x-data="{ sidebarOpen: false }">
+<body class="font-sans antialiased h-screen overflow-hidden" x-data="{ sidebarOpen: false }">
 
     <x-navbar :user="Auth::user()">
         <!-- Hamburger -->
