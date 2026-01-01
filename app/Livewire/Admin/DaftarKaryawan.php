@@ -7,13 +7,11 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
-use Livewire\WithPagination;
+use Illuminate\Support\Facades\Validator;
 
 class DaftarKaryawan extends Component
 {
-    use WithPagination;
-
-    public $mode = 'table';
+    public $mode = 'table'; // table, tambah, edit
     public $data = null;
 
     public $columns = ['No', 'Nama', 'Divisi', 'Token'];
@@ -24,27 +22,12 @@ class DaftarKaryawan extends Component
     public $name;
     public $divisi;
     public $token;
-    public $editId = null;
 
-    // Search & Sorting
-    public $search = '';
-    public $sortField = 'created_at';
-    public $sortDirection = 'desc';
-    public $perPage = 10;
+    public $editId = null;
 
     protected $listeners = [
         'delete-data' => 'delete'
     ];
-
-    public function searchData()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingSearch()
-    {
-        $this->resetPage();
-    }
 
     public function mount()
     {
@@ -53,34 +36,17 @@ class DaftarKaryawan extends Component
 
     public function loadData()
     {
-        $query = User::where('role', 'karyawan')
-            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
-            ->orderBy($this->sortField, $this->sortDirection);
+        $karyawan = User::where('role', 'karyawan')->get();
 
-        $karyawan = $query->paginate($this->perPage);
-
-        $this->rows = $karyawan->map(function ($item, $index) use ($karyawan) {
+        $this->rows = $karyawan->map(function ($item, $index) {
             return [
-                'no' => $karyawan->firstItem() + $index,
+                'no' => $index + 1,
                 'name' => $item->name,
                 'divisi' => $item->divisi ?? '-',
                 'token' => $item->token ?? '-',
                 'id' => $item->id
             ];
         })->toArray();
-
-        return $karyawan; // untuk pagination links di Blade
-    }
-
-    public function sortBy($field)
-    {
-        if ($this->sortField === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sortField = $field;
-            $this->sortDirection = 'asc';
-        }
-        $this->resetPage();
     }
 
     public function showTambah()
@@ -112,13 +78,33 @@ class DaftarKaryawan extends Component
 
     public function store()
     {
-        $this->validate([
-            'name' => 'required',
-            'divisi' => 'required',
-            'email' => 'required|email|unique:users,email'
+        // Generate token terlebih dahulu untuk validasi uniqueness
+        $token = strtoupper(Str::random(8));
+
+        $validator = Validator::make([
+            'name' => $this->name,
+            'divisi' => $this->divisi,
+            'email' => $this->email,
+            'token' => $token,
+        ], [
+            'name' => 'required|string|unique:users,name',
+            'divisi' => 'nullable|string',
+            'email' => 'required|email|unique:users,email',
+            'token' => 'unique:users,token',
         ]);
 
-        $token = strtoupper(Str::random(8));
+        if ($validator->fails()) {
+            if ($validator->errors()->has('email')) {
+                $this->dispatch('toast', type: 'error', message: 'Email sudah terdaftar');
+            } elseif ($validator->errors()->has('name')) {
+                $this->dispatch('toast', type: 'error', message: 'Nama sudah terdaftar');
+            } elseif ($validator->errors()->has('token')) {
+                $this->dispatch('toast', type: 'error', message: 'Terjadi duplikasi token, coba lagi');
+            } else {
+                $this->dispatch('toast', type: 'error', message: 'Terjadi kesalahan validasi');
+            }
+            return;
+        }
 
         User::create([
             'name' => $this->name,
@@ -129,15 +115,10 @@ class DaftarKaryawan extends Component
             'password' => Hash::make($token),
         ]);
 
-        $this->dispatch(
-            event: 'toast',
-            type: 'success',
-            message: 'Karyawan berhasil ditambahkan'
-        );
-
+        $this->dispatch('toast', type: 'success', message: 'Karyawan berhasil ditambahkan');
         $this->mode = 'table';
+        $this->loadData();
         $this->resetForm();
-        $this->resetPage();
     }
 
     public function update()
@@ -163,8 +144,8 @@ class DaftarKaryawan extends Component
         );
 
         $this->mode = 'table';
+        $this->loadData();
         $this->resetForm();
-        $this->resetPage();
     }
 
     public function resetToken($id)
@@ -183,29 +164,25 @@ class DaftarKaryawan extends Component
             message: 'Token sudah berhasil di reset'
         );
 
-        $this->resetPage();
+        $this->loadData();
     }
 
     public function delete($id)
     {
-        $karyawan = User::findOrFail($id);
-        $karyawan->delete();
+        $Karyawan = User::findOrFail($id);
 
+        $Karyawan->delete();
+        $this->loadData();
         $this->dispatch(
             event: 'toast',
             type: 'success',
             message: 'Karyawan berhasil dihapus'
         );
-
-        $this->resetPage();
     }
 
     #[Layout('layouts.app')]
     public function render()
     {
-        $karyawanPagination = $this->loadData(); // ambil data paginasi
-        return view('livewire.admin.daftar-karyawan', [
-            'karyawanPagination' => $karyawanPagination
-        ]);
+        return view('livewire.admin.daftar-karyawan');
     }
 }

@@ -1,7 +1,7 @@
 @props(['action', 'method' => 'POST', 'backUrl' => null, 'livewire' => false])
 
 <div {{ $attributes->merge([
-    'class' => 'bg-[#0A3B65] w-full max-w-3xl p-8 rounded-2xl shadow-xl text-white'
+    'class' => 'bg-[#0A3B65] w-full h-auto max-w-3xl p-8 rounded-2xl shadow-xl text-white'
 ]) }}>
     @isset($title)
         <h1 class="text-3xl font-extrabold mb-6 border-b border-white/20 pb-4">

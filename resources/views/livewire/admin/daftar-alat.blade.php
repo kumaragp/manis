@@ -1,7 +1,7 @@
 <div>
     <!-- Tabel -->
-    <x-table :columns="$columns" :rows="$rows" :pagination="$pagination" rowActions="table-action-buttons"
-        :rowActionsParams="[
+    <x-table :columns="$columns" :rows="$rows" :pagination="$pagination" :pagination="$pagination"
+        rowActions="table-action-buttons" :rowActionsParams="[
         'allowedActions' => ['edit', 'delete'],
         'idField' => 'id'
     ]">
@@ -23,7 +23,8 @@
                 <div class="flex-1"></div>
 
                 <div class="flex items-center gap-2">
-                    <x-action-button label="Urutkan" icon="fa-sort" wire:click="sortBy('created_at')" />
+                    <x-action-button :label="$sortDirection === 'desc' ? 'Terbaru' : 'Terlama'" icon="fa-sort"
+                        wire:click="sortBy('created_at')" />
                     <x-action-button label="Tambah Alat" icon="fa-plus" wire:click="openModal" />
                 </div>
             </div>
@@ -41,7 +42,7 @@
             <x-slot:title>{{ $alatId ? 'Edit Alat' : 'Tambah Alat' }}</x-slot:title>
 
             <x-input-field label="Nama Alat" wire:model.defer="nama_alat" />
-            <x-input-field label="Jumlah" type="number" wire:model.defer="jumlah_alat" />
+            <x-input-field label="Jumlah" type="number" min="1" wire:model.defer="jumlah_alat" />
             <x-input-field label="Harga" wire:model.defer="harga" />
             <x-input-field label="Gambar" name="gambar" type="file" wire:model="gambar" />
 

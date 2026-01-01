@@ -30,6 +30,15 @@
         </div>
 
         <div class="flex justify-end space-x-3 mt-6">
+
+        <a wire:click="resetModal"
+                class="inline-flex items-center space-x-2 bg-red-500 hover:bg-red-600
+                       text-white font-bold px-6 py-2.5 rounded-full shadow-lg transition">
+
+                <span>Batal</span>
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </a>
+
             <button type="submit"
                 class="inline-flex items-center space-x-2 bg-green-500 hover:bg-green-600
                        text-white font-bold px-6 py-2.5 rounded-full shadow-lg transition">
@@ -38,13 +47,6 @@
                 <i class="fa-solid {{ $submitIcon }} text-lg"></i>
             </button>
 
-            <a wire:click="resetModal"
-                class="inline-flex items-center space-x-2 bg-red-500 hover:bg-red-600
-                       text-white font-bold px-6 py-2.5 rounded-full shadow-lg transition">
-
-                <span>Batal</span>
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </a>
         </div>
 
     </form>

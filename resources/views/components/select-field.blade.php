@@ -9,7 +9,7 @@
     <label class="text-white mb-1">{{ $label }}</label>
 
     <select
-        {{ $attributes->merge(['class' => 'bg-[#1A2C4D] border rounded p-2']) }}
+        {{ $attributes->merge(['class' => 'bg-[#1A2C4D] border rounded p-2 rounded-xl']) }}
     >
         <option value="">Pilih {{ $label }}</option>
 

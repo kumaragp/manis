@@ -7,9 +7,9 @@ use App\Models\Alat;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
+use Illuminate\Support\Facades\Validator;
 
 class DaftarAlat extends Component
 {
@@ -89,58 +89,53 @@ class DaftarAlat extends Component
 
     public function save()
     {
-        $this->validate([
-            'nama_alat' => 'required|string',
+        // Validasi awal dengan toast
+        $validator = Validator::make([
+            'nama_alat' => $this->nama_alat,
+            'jumlah_alat' => $this->jumlah_alat,
+            'harga' => $this->harga,
+            'gambar' => $this->gambar,
+        ], [
+            'nama_alat' => 'required|string|unique:alat,nama_alat' . ($this->isEdit ? ',' . $this->alatId : ''),
             'jumlah_alat' => 'required|integer|min:0',
             'harga' => 'nullable|integer',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        try {
+        if ($validator->fails()) {
+            foreach ($validator->errors()->all() as $error) {
+                $this->dispatch('toast', type: 'error', message: $error);
+            }
+            return;
+        }
+
+        $data = [
+            'nama_alat' => $this->nama_alat,
+            'jumlah_alat' => $this->jumlah_alat,
+            'harga' => $this->harga,
+        ];
+
+        if ($this->gambar) {
             if ($this->isEdit && $this->alatId) {
                 $alat = Alat::findOrFail($this->alatId);
-
-                $data = [
-                    'nama_alat' => $this->nama_alat,
-                    'jumlah_alat' => $this->jumlah_alat,
-                    'harga' => $this->harga,
-                ];
-
-                if ($this->gambar) {
-                    if ($alat->gambar && Storage::disk('public')->exists($alat->gambar)) {
-                        Storage::disk('public')->delete($alat->gambar);
-                    }
-
-                    $data['gambar'] = $this->gambar->store('alat', 'public');
+                if ($alat->gambar && Storage::disk('public')->exists($alat->gambar)) {
+                    Storage::disk('public')->delete($alat->gambar);
                 }
-
-                $alat->update($data);
-                $message = 'Alat berhasil diperbarui';
-            } else {
-                $data = [
-                    'nama_alat' => $this->nama_alat,
-                    'jumlah_alat' => $this->jumlah_alat,
-                    'harga' => $this->harga,
-                ];
-
-                if ($this->gambar) {
-                    $data['gambar'] = $this->gambar->store('alat', 'public');
-                }
-
-                Alat::create($data);
-                $message = 'Alat berhasil ditambahkan';
             }
-
-            $this->dispatch('toast', type: 'success', message: $message);
-            $this->closeModal();
-            $this->resetForm();
-        } catch (QueryException $e) {
-            if ($e->errorInfo[1] == 1062) {
-                $this->dispatch('toast', type: 'error', message: 'Nama alat sudah terdaftar');
-                return;
-            }
-            throw $e;
+            $data['gambar'] = $this->gambar->store('alat', 'public');
         }
+
+        if ($this->isEdit && $this->alatId) {
+            Alat::findOrFail($this->alatId)->update($data);
+            $message = 'Alat berhasil diperbarui';
+        } else {
+            Alat::create($data);
+            $message = 'Alat berhasil ditambahkan';
+        }
+
+        $this->dispatch('toast', type: 'success', message: $message);
+        $this->closeModal();
+        $this->resetForm();
     }
 
     public function delete($id)
@@ -153,7 +148,11 @@ class DaftarAlat extends Component
             }
 
             $alat->delete();
-            $this->dispatch('toast', type: 'success', message: 'Alat berhasil dihapus');
+            $this->dispatch(
+                'toast',
+                type: 'success',
+                message: 'Alat berhasil dihapus'
+            );
         }
     }
 
