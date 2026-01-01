@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\Admin\RiwayatPeminjamanController;
-
 use App\Livewire\Admin\DaftarAlat;
 use App\Livewire\Admin\PengadaanAlat;
 use App\Livewire\Admin\PenjualanAlat;
 use App\Livewire\Admin\PerawatanAlat;
 use App\Livewire\Admin\DaftarKaryawan;
+
+use App\Livewire\Admin\RiwayatPeminjaman;
 use App\Livewire\Karyawan\DaftarAlatKaryawan;
 use App\Livewire\Karyawan\RiwayatPeminjamanKaryawan;
 use Illuminate\Support\Facades\Route;
@@ -25,8 +25,8 @@ Route::middleware(['auth', 'role:karyawan'])->group(function () {
 
 // Admin
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/riwayat-peminjaman', [RiwayatPeminjamanController::class, 'index'])->name('riwayatPeminjaman');
 
+    Route::get('/admin/riwayat-peminjaman', RiwayatPeminjaman::class)->name('riwayatPeminjaman');
     Route::get('/admin/daftar-alat', DaftarAlat::class)->name('daftarAlat');
     Route::get('/admin/pengadaan-alat', PengadaanAlat::class)->name('pengadaanAlat');
     Route::get('/admin/penjualan-alat', PenjualanAlat::class)->name('penjualanAlat');

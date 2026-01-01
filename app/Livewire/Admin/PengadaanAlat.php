@@ -3,47 +3,47 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Pengadaan;
 use App\Models\Alat;
 use Carbon\Carbon;
-use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
 
 class PengadaanAlat extends Component
 {
     use WithPagination;
 
+    protected $paginationTheme = 'tailwind';
+
     public $columns = ['No', 'Tanggal', 'Alat', 'Vendor', 'Jumlah', 'Harga'];
+    public $rows = [];
+
+    public $totalAlat;
+    public $totalNilaiAlat;
+    public $rataRataHarga;
+
     public $isOpen = false;
     public $pengadaanId;
-    public $editId;
     public $tanggal;
     public $vendor;
     public $nama_alat;
     public $jumlah;
     public $harga;
-    public $tujuan;
     public $alat_id;
 
     public $search = '';
     public $sortField = 'tanggal_pengadaan';
     public $sortDirection = 'desc';
 
-    public $totalAlat;
-    public $totalPenjualan;
-    public $rataRataHarga;
-
     protected $listeners = [
         'delete-data' => 'delete'
     ];
 
-    protected $paginationTheme = 'tailwind';
-
     public function mount()
     {
-        $this->resetForm();
+        $this->tanggal = now()->format('Y-m-d');
     }
-    
+
     public function searchData()
     {
         $this->resetPage();
@@ -54,33 +54,49 @@ class PengadaanAlat extends Component
         $this->resetPage();
     }
 
-    public function sortBy($field)
+    public function loadData()
     {
-        if ($this->sortField === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sortField = $field;
-            $this->sortDirection = 'asc';
-        }
+        $query = Pengadaan::query()
+            ->when($this->search, function ($q) {
+                $q->where('nama_alat', 'like', '%' . $this->search . '%')
+                  ->orWhere('vendor', 'like', '%' . $this->search . '%');
+            })
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate(10);
+
+        $this->rows = $query->map(function ($item, $index) use ($query) {
+            return [
+                'id' => $item->id,
+                'no' => ($query->currentPage() - 1) * $query->perPage() + $index + 1,
+                'tanggal' => Carbon::parse($item->tanggal_pengadaan)->format('d/m/Y'),
+                'nama_alat' => $item->nama_alat,
+                'vendor' => $item->vendor,
+                'jumlah' => $item->jumlah,
+                'harga' => 'Rp. ' . number_format($item->harga, 0, ',', '.'),
+            ];
+        });
+
+        $this->totalAlat = Alat::sum('jumlah_alat');
+        $this->totalNilaiAlat = Alat::sum('harga');
+        $this->rataRataHarga = Alat::avg('harga');
+
+        return $query;
     }
 
-    public function openModal($id = null)
+    public function sortBy($field)
+    {
+        $this->sortDirection =
+            $this->sortField === $field && $this->sortDirection === 'asc'
+                ? 'desc'
+                : 'asc';
+
+        $this->sortField = $field;
+    }
+
+    public function openModal()
     {
         $this->resetForm();
         $this->isOpen = true;
-
-        if ($id) {
-            $pengadaan = Pengadaan::find($id);
-            if ($pengadaan) {
-                $this->pengadaanId = $pengadaan->id;
-                $this->tanggal = $pengadaan->tanggal_pengadaan->format('Y-m-d');
-                $this->vendor = $pengadaan->vendor;
-                $this->nama_alat = $pengadaan->nama_alat;
-                $this->jumlah = $pengadaan->jumlah;
-                $this->harga = $pengadaan->harga;
-                $this->alat_id = $pengadaan->alat_id;
-            }
-        }
     }
 
     public function closeModal()
@@ -90,14 +106,12 @@ class PengadaanAlat extends Component
 
     public function resetForm()
     {
+        $this->pengadaanId = null;
         $this->tanggal = now()->format('Y-m-d');
         $this->vendor = '';
         $this->nama_alat = '';
         $this->jumlah = '';
         $this->harga = '';
-        $this->tujuan = '';
-        $this->alat_id = null;
-        $this->pengadaanId = null;
     }
 
     public function save()
@@ -108,75 +122,49 @@ class PengadaanAlat extends Component
             'jumlah' => 'required|integer|min:1',
             'harga' => 'nullable|integer',
             'vendor' => 'nullable|string',
-            'alat_id' => 'nullable|exists:alat,id',
         ]);
 
-        if ($this->pengadaanId) {
-            // Update existing
-            $pengadaan = Pengadaan::findOrFail($this->pengadaanId);
-            $pengadaan->update([
-                'alat_id' => $this->alat_id,
-                'nama_alat' => $this->nama_alat,
-                'tanggal_pengadaan' => $this->tanggal,
-                'vendor' => $this->vendor,
-                'jumlah' => $this->jumlah,
-                'harga' => $this->harga,
-            ]);
-            $message = 'Pengadaan alat berhasil diperbarui';
-        } else {
-            // Create new
-            Pengadaan::create([
-                'alat_id' => $this->alat_id,
-                'nama_alat' => $this->nama_alat,
-                'tanggal_pengadaan' => $this->tanggal,
-                'vendor' => $this->vendor,
-                'jumlah' => $this->jumlah,
-                'harga' => $this->harga,
-            ]);
-            $message = 'Pengadaan alat berhasil ditambahkan';
-        }
+        Pengadaan::create([
+            'alat_id' => $this->alat_id,
+            'nama_alat' => $this->nama_alat,
+            'tanggal_pengadaan' => $this->tanggal,
+            'vendor' => $this->vendor,
+            'jumlah' => $this->jumlah,
+            'harga' => $this->harga,
+        ]);
 
-        $this->dispatch('toast', type: 'success', message: $message);
+        $this->dispatch(
+            'toast',
+            type: 'success',
+            message: 'Pengadaan alat berhasil dilakukan'
+        );
+
         $this->closeModal();
-        $this->resetForm();
+    }
+
+    public function confirmDelete($id)
+    {
+        $this->dispatch('confirm-delete', id: $id);
     }
 
     public function delete($id)
     {
-        $pengadaan = Pengadaan::findOrFail($id);
-        $pengadaan->delete();
+        Pengadaan::findOrFail($id)->delete();
 
-        $this->dispatch('toast', type: 'success', message: 'Pengadaan alat berhasil dihapus');
+        $this->dispatch(
+            'toast',
+            type: 'success',
+            message: 'Pengadaan alat berhasil dihapus'
+        );
     }
 
     #[Layout('layouts.app')]
     public function render()
     {
-        $pengadaan = Pengadaan::with('alat')
-            ->where('nama_alat', 'like', "%{$this->search}%")
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate(10);
-
-        $this->totalAlat = Alat::sum('jumlah_alat');
-        $this->totalPenjualan = Alat::sum('harga');
-        $this->rataRataHarga = Alat::avg('harga');
-
-        // Transform data untuk tabel
-        $tableRows = $pengadaan->through(function ($item, $index) use ($pengadaan) {
-            return [
-                'id' => $item->id,
-                'no' => $index + 1 + ($pengadaan->currentPage() - 1) * $pengadaan->perPage(),
-                'tanggal' => Carbon::parse($item->tanggal_pengadaan)->format('d/m/Y'),
-                'nama_alat' => $item->nama_alat,
-                'vendor' => $item->vendor,
-                'jumlah' => $item->jumlah,
-                'harga' => 'Rp. ' . number_format($item->harga, 0, ',', '.'),
-            ];
-        });
+        $pagination = $this->loadData();
 
         return view('livewire.admin.pengadaan-alat', [
-            'rows' => $tableRows,
-            'pagination' => $pengadaan,
+            'pagination' => $pagination
         ]);
     }
 }

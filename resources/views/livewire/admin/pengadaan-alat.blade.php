@@ -10,7 +10,7 @@
                 <x-stat-card title="Total Alat" value="{{ $totalAlat ?? 0 }}" unit="Unit" icon="fa-screwdriver-wrench"
                     bg="bg-purple-700" />
 
-                <x-stat-card title="Total Penjualan" value="Rp. {{ number_format($totalPenjualan ?? 0, 0, ',', '.') }}"
+                <x-stat-card title="Total Penjualan" value="Rp. {{ number_format($totalNilaiAlat?? 0, 0, ',', '.') }}"
                     icon="fa-money-bill" bg="bg-green-700" />
 
                 <x-stat-card title="Rata-rata Harga" value="Rp. {{ number_format($rataRataHarga ?? 0, 0, ',', '.') }}"

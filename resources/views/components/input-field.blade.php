@@ -25,68 +25,72 @@
 
 <div class="flex flex-col">
     @if($label)
-        <label for="{{ $id }}" class="font-semibold mb-1 {{ $labelColor }}">
-            {{ $label }}
-        </label>
+    <label for="{{ $id }}" class="font-semibold mb-1 {{ $labelColor }}">
+        {{ $label }}
+    </label>
     @endif
 
-    {{-- DISABLED --}}
+    <!-- Disabled -->
     @if($disabled)
-        <p id="{{ $id }}"
-            class="w-full p-2 rounded-xl {{ $bgInput }} text-white border {{ $borderInput }}">
-            {{ $value }}
+    <div class="relative group">
+        <p id="{{ $id }}" class="w-full p-2 rounded-xl
+                  bg-gray-600/40
+                  text-gray-200
+                  border-2 border-dashed border-gray-400
+                  cursor-not-allowed
+                  flex items-center justify-between gap-2">
+
+            <span class="truncate">
+                {{ $value ?: '-' }}
+            </span>
+
+            <i class="fa-solid fa-lock text-gray-300"></i>
         </p>
 
-    {{-- SELECT --}}
+
+        <span class="absolute -bottom-5 left-1 text-xs text-gray-300 opacity-80">
+            Tidak dapat diedit
+        </span>
+    </div>
+
+    <!-- Select -->
     @elseif(is_array($options))
-        <select
-            id="{{ $id }}"
-            name="{{ $name }}"
-            class="w-full p-2 rounded-xl {{ $bgInput }} text-white border {{ $borderInput }}
-                   focus:outline-none focus:ring-1 {{ $focusRing }} {{ $focusBorder }}" >
-            @foreach($options as $option)
-                <option value="{{ $option }}" @selected(old($name, $value) == $option)>
-                    {{ $option }}
-                </option>
-            @endforeach
-        </select>
+    <select id="{{ $id }}" name="{{ $name }}" class="w-full p-2 rounded-xl {{ $bgInput }} text-white border {{ $borderInput }}
+                   focus:outline-none focus:ring-1 {{ $focusRing }} {{ $focusBorder }}">
+        @foreach($options as $option)
+        <option value="{{ $option }}" @selected(old($name, $value)==$option)>
+            {{ $option }}
+        </option>
+        @endforeach
+    </select>
 
-    {{-- FILE --}}
+    <!-- File -->
     @elseif($type === 'file')
-        <div class="relative">
-            <input
-                type="file"
-                id="{{ $id }}"
-                name="{{ $name }}"
-                {{ $attributes }}
-                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                onchange="document.getElementById('{{ $id }}-name').textContent = this.files[0]?.name || ''" />
+    <div class="relative">
+        <input type="file" id="{{ $id }}" name="{{ $name }}" {{ $attributes }}
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onchange="document.getElementById('{{ $id }}-name').textContent = this.files[0]?.name || ''" />
 
-            <div class="flex items-center justify-between border {{ $borderInput }}
+        <div class="flex items-center justify-between border {{ $borderInput }}
                         rounded-xl {{ $bgInput }} p-2 px-4 cursor-pointer {{ $hoverBg }} transition">
-                <span id="{{ $id }}-name" class="text-white truncate">
-                    Pilih file...
-                </span>
-                <span class="font-bold px-4 py-2 rounded-full shadow-md transition
+            <span id="{{ $id }}-name" class="text-white truncate">
+                Pilih file...
+            </span>
+            <span class="font-bold px-4 py-2 rounded-full shadow-md transition
                     {{ $isAdmin ? 'bg-[#55A0FF] text-[#0A3B65]' : 'bg-[#E0B060] text-[#4A2F0F]' }}">
-                    Browse
-                </span>
-            </div>
+                Browse
+            </span>
         </div>
+    </div>
 
     {{-- INPUT DEFAULT --}}
     @else
-        <input
-            id="{{ $id }}"
-            name="{{ $name }}"
-            type="{{ $type }}"
-            value="{{ old($name, $value) }}"
-            placeholder="{{ $placeholder ?? 'Masukkan ' . ($label ?: $name) }}"
-            {{ $attributes->merge([
-                'class' => "w-full p-2 rounded-xl $bgInput text-white border $borderInput
-                            focus:outline-none focus:ring-1 $focusRing $focusBorder "
-                            . ($isDate ? '[color-scheme:dark]' : '')
-            ]) }}
-        />
+    <input id="{{ $id }}" name="{{ $name }}" type="{{ $type }}" value="{{ old($name, $value) }}"
+        placeholder="{{ $placeholder ?? 'Masukkan ' . ($label ?: $name) }}" {{ $attributes->merge([
+    'class' => "w-full p-2 rounded-xl $bgInput text-white border $borderInput
+    focus:outline-none focus:ring-1 $focusRing $focusBorder "
+    . ($isDate ? '[color-scheme:dark]' : '')
+    ]) }}
+    />
     @endif
 </div>

@@ -14,10 +14,11 @@
     @livewireStyles
 </head>
 
-<body class="font-sans antialiased h-screen overflow-hidden" x-data="{ sidebarOpen: false }">
+<body class="font-sans antialiased overflow-x-hidden" x-data="{ sidebarOpen: false }">
 
+    <!-- Navbar -->
     <x-navbar :user="Auth::user()">
-        <!-- Hamburger -->
+        <!-- Hamburger untuk mobile -->
         <div class="lg:hidden flex items-center">
             <button @click="sidebarOpen = true" class="text-white p-2">
                 <i class="fa-solid fa-bars text-2xl"></i>
@@ -25,46 +26,53 @@
         </div>
     </x-navbar>
 
-
+    <!-- Wrapper utama -->
     <div class="min-h-screen 
-    {{ Auth::user()->role === 'admin' ? 'bg-[#121E33]' : 'bg-[#4C3E24]' }}
-    {{ Auth::user()->role === 'admin' ? 'flex' : '' }}">
-
-        <!-- Nav Scrollbar -->
-        @if(Auth::user()->role === 'karyawan' && (request()->routeIs('daftarAlatKaryawan') || request()->routeIs('riwayatPeminjamanKaryawan')))
-            <x-nav-scrollbar />
-        @endif
+                {{ Auth::user()->role === 'admin' ? 'flex bg-[#121E33]' : 'bg-[#4C3E24]' }}">
 
         <!-- Sidebar Admin -->
         @if(Auth::user()->role === 'admin')
             <x-sidebar />
 
-            <!-- Hamburger -->
-            <div class="fixed top-0 right-0 h-full bg-black/50 z-40 lg:hidden" x-show="sidebarOpen" x-transition.opacity
-                @click="sidebarOpen = false">
+            <!-- Overlay saat sidebar mobile -->
+            <div class="fixed inset-0 bg-black/50 z-40 lg:hidden" 
+                 x-show="sidebarOpen" 
+                 x-transition.opacity
+                 @click="sidebarOpen = false">
             </div>
 
+            <!-- Sidebar mobile -->
             <div x-cloak
-                class="fixed inset-y-0 right-0 w-64 bg-[#0A162B] shadow-2xl z-50 lg:hidden transform translate-x-full pointer-events-none transition-transform duration-300 ease-in-out"
-                :class="{ 'translate-x-0 pointer-events-auto': sidebarOpen, 'translate-x-full pointer-events-none': !sidebarOpen }">
+                 class="fixed inset-y-0 right-0 w-64 bg-[#0A162B] shadow-2xl z-50 lg:hidden transform translate-x-full transition-transform duration-300 ease-in-out"
+                 :class="{ 'translate-x-0': sidebarOpen, 'translate-x-full': !sidebarOpen }">
                 <button @click="sidebarOpen = false" class="text-white p-4">
                     <i class="fa-solid fa-xmark text-2xl"></i>
                 </button>
 
                 <x-sidebar-mobile />
             </div>
-
         @endif
 
-        <main
-            class="{{ Auth::user()->role === 'admin' ? 'flex-1' : 'w-full' }} pt-16 px-6 overflow-x-hidden {{ Auth::user()->role === 'karyawan' ? 'pt-28' : '' }}">
+        <!-- Sidebar Karyawan -->
+        @if(Auth::user()->role === 'karyawan' && (request()->routeIs('daftarAlatKaryawan') || request()->routeIs('riwayatPeminjamanKaryawan')))
+            <x-nav-scrollbar />
+        @endif
+
+        <!-- Main Content -->
+        <main class="{{ Auth::user()->role === 'admin' ? 'flex-1' : 'w-full' }} 
+                     pt-16 px-6 
+                     {{ Auth::user()->role === 'karyawan' ? 'pt-28' : '' }} 
+                     overflow-y-auto">
             <div class="w-full">
                 {{ $slot }}
             </div>
         </main>
+
     </div>
+
     @livewireScripts
 </body>
+
 
 <!-- Autofill Data -->
 <script>
