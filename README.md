@@ -20,6 +20,8 @@ Perusahaan dapat meminimalkan kesalahan pencatatan manual, mempercepat proses ad
 - **Manajemen Laporan Kerusakan Alat**: Admin dapat mencatat kerusakan alat dan memantau laporan kerusakan yang disampaikan oleh karyawan.
 - **Daftar Karyawan**: Admin dapat menambahkan dan mengelola data karyawan agar dapat mengakses sistem.
 - **Cetak Laporan**: Admin dapat mencetak laporan penjualan dan perawatan alat dengan dua metode, yaitu:
+   - **Kustom**: Laporan dapat dicetak berdasarkan rentang tanggal, bulan, dan tahun sesuai kebutuhan.
+   - **Preset**: Laporan dapat dicetak berdasarkan periode tetap, meliputi mingguan, bulanan, dan tahunan.
 
 
 ## Tech Stack
