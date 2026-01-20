@@ -27,7 +27,7 @@ Perusahaan dapat meminimalkan kesalahan pencatatan manual, mempercepat proses ad
 ## Tech Stack
 
 - **Backend**: Laravel
-- **Frontend**: Tempalating Blade Engine, TailwindCSS for Styling
+- **Frontend**: Blade Template Engine, TailwindCSS
 - **Database**: MySQL
 - **Others**: Livewire, Javascript
 
