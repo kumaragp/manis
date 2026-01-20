@@ -1,59 +1,120 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Manis
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Manis adalah website yang dirancang untuk memudahkan perusahaan dalam melakukan manajemen inventaris alat, mulai dari pencatatan data alat, pemantauan ketersediaan, pengelolaan penggunaan, perawatan serta penjualan alat.
 
-## About Laravel
+Perusahaan dapat meminimalkan kesalahan pencatatan manual, mempercepat proses administrasi inventaris, serta memastikan setiap alat tercatat dengan jelas termasuk status, jumlah, dan riwayat penggunaannya. Sistem ini membantu meningkatkan efisiensi operasional, transparansi data, dan pengambilan keputusan berbasis informasi yang akurat.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**User Karyawan**
+- **Peminjaman Alat**: Karyawan dapat melakukan peminjaman alat secara daring melalui sistem.
+- **Pengembalian Alat**: Karyawan dapat melakukan pengembalian alat secara daring tanpa harus datang langsung ke tempat peminjaman.
+- **Pelaporan Alat**: Karyawan dapat melaporkan kerusakan alat secara daring kepada admin. 
 
-## Learning Laravel
+**User Admin**
+- **Memantau Peminjaman Alat**:  Admin dapat memantau status peminjaman alat yang sedang digunakan oleh karyawan.
+- **Daftar Alat**: Admin dapat menambahkan, memperbarui, dan menghapus data alat.
+- **Pengadaan Alat**: Admin dapat mencatat rencana pengadaan alat sebelum alat ditambahkan ke sistem.
+- **Penjualan Alat**: Admin dapat mencatat penjualan alat yang sudah tidak digunakan.
+- **Manajemen Laporan Kerusakan Alat**: Admin dapat mencatat kerusakan alat dan memantau laporan kerusakan yang disampaikan oleh karyawan.
+- **Daftar Karyawan**: Admin dapat menambahkan dan mengelola data karyawan agar dapat mengakses sistem.
+- **Cetak Laporan**: Admin dapat mencetak laporan penjualan dan perawatan alat dengan dua metode, yaitu:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Tech Stack
 
-## Laravel Sponsors
+- **Backend**: Laravel
+- **Frontend**: Tempalating Blade Engine, TailwindCSS for Styling
+- **Database**: MySQL
+- **Others**: Livewire, Javascript
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-### Premium Partners
+## Demo Project
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Web saat ini masih dalam pengembangan (local)
 
-## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Preview
 
-## Code of Conduct
+### 1. User Karyawan
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+##### Daftar Alat
+![Daftar Alat](https://github.com/user-attachments/assets/00d7d165-ae65-4863-a897-a5b052d487eb)
 
-## Security Vulnerabilities
+##### Riwayat Peminjaman
+![Riwayat Peminjaman](https://github.com/user-attachments/assets/7a302006-a6ad-4da1-b854-32bacb84ce5b)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+### 2. User Admin
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+##### Riwayat Peminjaman
+![Dashboard Riwayat Peminjaman](https://github.com/user-attachments/assets/d767d9b6-251f-4e75-bd29-f6401ebd05c9)
+
+##### Daftar Alat
+![Dashboard Daftar ALat](https://github.com/user-attachments/assets/ad8c8493-90ef-41f0-97de-8efafe6b7381)
+
+##### Pengadaan Alat
+![Dashboard Pengadaan Alat](https://github.com/user-attachments/assets/c2102bff-b177-4678-8fbd-62005c096061)
+
+##### Penjualan Alat
+![Dashboard Penjualan Alat](https://github.com/user-attachments/assets/6f46840d-92f5-42cc-9703-2ff320655a00)
+
+##### Perawatan Alat
+![Dashboard Perawatan Alat](https://github.com/user-attachments/assets/01b11395-0ea6-4fff-846f-9679fb0d5acb)
+
+##### Daftar Karyawan
+![Dashboard Daftar Karyawan](https://github.com/user-attachments/assets/940b0283-69e0-4936-a533-c0404210a2e0)
+
+
+## Panduan Instalasi
+Ikuti langkah-langkah berikut untuk menginstal Manis di lokal Anda:
+<br>Nb. Pastikan lokal server Anda sudah berjalan, bisa menggunakan XAMPP, Laragon, atau sejenisnya.
+
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/kumaragp/manis.git
+   
+2. **Masuk ke Direktori Proyek Setelah repositori ter-clone**
+   ```bash
+   cd manis
+    
+3. **Install Dependencies Pastikan Anda sudah menginstal Composer dan Node.js**
+   ```bash
+   composer install
+   npm install
+   
+4. **Konfigurasi .env**
+   ```bash
+   cp .env.example .env
+   
+5. **Generate Key Aplikasi**
+   ```bash
+   php artisan key:generate
+   
+6. **Migrasi Database**
+   Karena adanya foreign key, jalankan perintah migrasi berikut secara berurutan untuk memastikan migrasi berhasil:
+   ```bash
+   php artisan migrate
+   
+7. **Install NPM Assets**
+   ```bash
+   npm run dev
+   
+8. **Jalankan Server**
+   ```bash
+   php artisan serve
+
+9. Akses aplikasi melalui browser di alamat http://localhost:8000.
+
+
+## Issue
+Jika Anda menemui masalah atau membutuhkan bantuan lebih lanjut, silakan buka issue di GitHub atau hubungi saya.
+
+
+## Authors
+
+- [@kumaragp](https://github.com/kumaragp)
+- [@rindiantikaaa](https://github.com/rindiantikaaa)
+- [@izzanannafi](https://github.com/Izzannafi)
