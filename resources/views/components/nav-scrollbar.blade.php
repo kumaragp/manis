@@ -55,7 +55,6 @@
                 const url = this.href;
                 const page = this.getAttribute('data-page');
                 
-                // Update active state
                 links.forEach(l => {
                     l.classList.remove('active', 'text-white');
                     l.classList.add('text-white/60');
@@ -63,11 +62,9 @@
                 this.classList.add('active', 'text-white');
                 this.classList.remove('text-white/60');
                 
-                // Fade out animation
                 contentContainer.style.opacity = '0';
                 contentContainer.style.transform = 'translateY(10px)';
                 
-                // Fetch new content with AJAX
                 fetch(url, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
@@ -75,30 +72,23 @@
                 })
                 .then(response => response.text())
                 .then(html => {
-                    // Parse HTML response
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
                     const newContent = doc.querySelector('main').innerHTML;
-                    
-                    // Update content with fade in
                     setTimeout(() => {
                         contentContainer.innerHTML = newContent;
                         contentContainer.style.opacity = '1';
                         contentContainer.style.transform = 'translateY(0)';
-                        
-                        // Update URL without reload
                         history.pushState({page: page}, '', url);
                     }, 300);
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    // Fallback ke normal navigation
                     window.location.href = url;
                 });
             });
         });
         
-        // Handle browser back/forward buttons
         window.addEventListener('popstate', function(e) {
             location.reload();
         });

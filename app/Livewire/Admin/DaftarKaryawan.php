@@ -11,17 +11,19 @@ use Illuminate\Support\Facades\Validator;
 
 class DaftarKaryawan extends Component
 {
-    public $mode = 'table'; // table, tambah, edit
+    public $mode = 'table';
     public $data = null;
 
     public $columns = ['No', 'Nama', 'Divisi', 'Token'];
     public $rows = [];
 
-    // Form fields
     public $email;
     public $name;
     public $divisi;
     public $token;
+
+    public $sortField = 'created_at';
+    public $sortDirection = 'desc';
 
     public $editId = null;
 
@@ -34,9 +36,23 @@ class DaftarKaryawan extends Component
         $this->loadData();
     }
 
+    public function sortBy($field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->loadData();
+    }
+
     public function loadData()
     {
-        $karyawan = User::where('role', 'karyawan')->get();
+        $karyawan = User::where('role', 'karyawan')
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->get();
 
         $this->rows = $karyawan->map(function ($item, $index) {
             return [
@@ -78,7 +94,6 @@ class DaftarKaryawan extends Component
 
     public function store()
     {
-        // Generate token terlebih dahulu untuk validasi uniqueness
         $token = strtoupper(Str::random(8));
 
         $validator = Validator::make([
@@ -140,7 +155,7 @@ class DaftarKaryawan extends Component
         $this->dispatch(
             event: 'toast',
             type: 'success',
-            message: 'Karyawan berhasil diperbarui'
+            message: 'Data Karyawan berhasil diperbarui'
         );
 
         $this->mode = 'table';
@@ -161,7 +176,7 @@ class DaftarKaryawan extends Component
         $this->dispatch(
             event: 'toast',
             type: 'success',
-            message: 'Token sudah berhasil di reset'
+            message: 'Token berhasil di reset'
         );
 
         $this->loadData();
@@ -176,7 +191,7 @@ class DaftarKaryawan extends Component
         $this->dispatch(
             event: 'toast',
             type: 'success',
-            message: 'Karyawan berhasil dihapus'
+            message: 'Data Karyawan berhasil dihapus'
         );
     }
 

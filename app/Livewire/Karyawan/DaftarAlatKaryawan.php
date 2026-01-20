@@ -17,7 +17,7 @@ class DaftarAlatKaryawan extends Component
     public $jumlah;
     public $keterangan;
     public $tanggal;
-    public $search = ''; // properti search
+    public $search = '';
 
     protected $listeners = [
         'openPeminjaman' => 'openPeminjaman',
@@ -55,7 +55,6 @@ class DaftarAlatKaryawan extends Component
 
     public function updatedSearch()
     {
-        // reload alat saat search berubah
         $this->loadAlat();
     }
 

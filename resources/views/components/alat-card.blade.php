@@ -1,10 +1,4 @@
-@props([
-    'id',
-    'nama',
-    'gambar',
-    'status',
-    'stok' => 0,
-])
+@props(['id', 'nama', 'gambar', 'status', 'stok' => 0])
 @php
     $finalStatus = $stok == 0 ? 'STOK HABIS' : $status;
 

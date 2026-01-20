@@ -89,7 +89,6 @@ class DaftarAlat extends Component
 
     public function save()
     {
-        // Validasi awal dengan toast
         $validator = Validator::make([
             'nama_alat' => $this->nama_alat,
             'jumlah_alat' => $this->jumlah_alat,
@@ -127,7 +126,7 @@ class DaftarAlat extends Component
 
         if ($this->isEdit && $this->alatId) {
             Alat::findOrFail($this->alatId)->update($data);
-            $message = 'Alat berhasil diperbarui';
+            $message = 'Data Alat berhasil diperbarui';
         } else {
             Alat::create($data);
             $message = 'Alat berhasil ditambahkan';
@@ -151,7 +150,7 @@ class DaftarAlat extends Component
             $this->dispatch(
                 'toast',
                 type: 'success',
-                message: 'Alat berhasil dihapus'
+                message: 'Data Alat berhasil dihapus'
             );
         }
     }
@@ -164,7 +163,6 @@ class DaftarAlat extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(10);
 
-        // Transform data untuk tabel
         $tableRows = $rows->through(function ($item, $index) use ($rows) {
             return [
                 'id' => $item->id,

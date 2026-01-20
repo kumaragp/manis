@@ -82,34 +82,27 @@
         const jumlahInput = document.getElementById('jumlahInput');
         const hargaInput = document.getElementById('hargaInput');
 
-        // Jika elemen select tidak ada → tidak perlu lakukan apa-apa
         if (!alatSelect) return;
 
-        // Fungsi untuk update field
         function updateFields() {
             const alat = alatData[alatSelect.value];
             if (!alat) return;
 
-            // Untuk jumlahInput → wajib jika ada
             if (jumlahInput) {
                 jumlahInput.max = alat.jumlah_alat;
                 if (!jumlahInput.value) jumlahInput.value = alat.jumlah_alat;
 
-                // Cegah nilai invalid
                 if (jumlahInput.value < 1) jumlahInput.value = 1;
                 if (jumlahInput.value > alat.jumlah_alat) jumlahInput.value = alat.jumlah_alat;
             }
 
-            // Untuk hargaInput → optional
             if (hargaInput && jumlahInput) {
                 hargaInput.value = alat.harga * jumlahInput.value;
             }
         }
 
-        // Event saat memilih alat
         alatSelect.addEventListener('change', updateFields);
 
-        // Event saat mengubah jumlah
         if (jumlahInput) {
             jumlahInput.addEventListener('input', updateFields);
         }

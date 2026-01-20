@@ -14,17 +14,14 @@ class RoleMiddleware
     {
         $user = $request->user();
 
-        // Jika user tidak login
         if (!$user) {
             return redirect('/login');
         }
 
-        // Admin boleh akses semuanya
         if ($user->role === 'admin') {
             return $next($request);
         }
 
-        // Jika karyawan dan mencoba akses admin page
         if ($role === 'admin' && $user->role !== 'admin') {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }

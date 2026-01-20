@@ -24,7 +24,10 @@
                 <div class="flex-1"></div>
 
                 <div class="flex items-center gap-2">
-                    <x-action-button label="Urutkan" icon="fa-sort" wire:click="sortBy('created_at')" />
+                    <div class="flex items-center gap-2">
+                    <x-action-button :label="$sortDirection === 'desc' ? 'Terbaru' : 'Terlama'" icon="fa-sort"
+                        wire:click="sortBy('created_at')" />
+                </div>
                     <x-action-button label="Tambah Karyawan" icon="fa-plus" wire:click="showTambah" />
                 </div>
             </div>

@@ -31,7 +31,6 @@
         </x-slot>
     </x-table>
 
-    <!-- Modal Tambah/Edit Alat -->
     <div x-cloak wire:key="modal-{{ $alatId ?? 'new' }}" x-data="{ show: @entangle('isOpen') }" x-show="show"
         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-90"
         x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200"
@@ -46,7 +45,6 @@
             <x-input-field label="Harga" wire:model.defer="harga" />
             <x-input-field label="Gambar" name="gambar" type="file" wire:model="gambar" />
 
-            <!-- Preview Gambar Saat Edit -->
             @if($gambar)
                 <img src="{{ $gambar->temporaryUrl() }}" alt="Preview" class="mt-2 w-32 h-32 object-cover rounded-lg">
             @elseif($isEdit && $alatId && $rows)
