@@ -62,7 +62,6 @@ class PerawatanAlat extends Component
 
         $stokGudang = $stokAlat - $stokDipakai;
 
-        // 🔥 INI KUNCI-NYA
         if ($this->perawatanId) {
             $jumlahPerawatanSaatIni = Perawatan::where('id', $this->perawatanId)
                 ->value('jumlah');
@@ -149,7 +148,8 @@ class PerawatanAlat extends Component
             if (!$perawatan) {
 
                 if ($this->status !== 'diperbaiki' && $this->jumlah > $stokTersedia) {
-                    abort(422, 'Stok tidak mencukupi');
+                    $this->dispatch('toast', type: 'error', message: 'Stok tidak mencukupi');
+                    return;
                 }
 
                 Perawatan::create([
@@ -171,7 +171,8 @@ class PerawatanAlat extends Component
             }
 
             if ($perawatan->status === 'diperbaiki') {
-                abort(403, 'Perawatan sudah selesai');
+                $this->dispatch('toast', type: 'error', message: 'Perawatan sudah selesai');
+                return;
             }
 
             $jumlahLama = $perawatan->jumlah;
@@ -182,7 +183,8 @@ class PerawatanAlat extends Component
             if ($statusLama !== 'diperbaiki' && $statusBaru === 'diperbaiki') {
 
                 if ($jumlahBaru > $jumlahLama) {
-                    abort(422, 'Jumlah tidak boleh melebihi jumlah sebelumnya');
+                    $this->dispatch('toast', type: 'error', message: 'Jumlah tidak boleh melebihi jumlah sebelumnya');
+                    return;
                 }
 
                 if ($jumlahBaru < $jumlahLama) {
@@ -210,18 +212,17 @@ class PerawatanAlat extends Component
                     ]);
                 }
 
-                // 3️⃣ Tambah stok hanya yang diperbaiki
                 Alat::where('id', $perawatan->alat_id)
                     ->increment('jumlah_alat', $jumlahBaru);
 
                 return;
             }
 
-            // ===================== UPDATE NORMAL =====================
             $selisih = $jumlahBaru - $jumlahLama;
 
             if ($selisih > 0 && $selisih > $stokTersedia) {
-                abort(422, 'Stok tidak mencukupi');
+                $this->dispatch('toast', type: 'error', message: 'Stok tidak mencukupi');
+                return;
             }
 
             if ($selisih > 0) {
@@ -241,7 +242,7 @@ class PerawatanAlat extends Component
             ]);
         });
 
-        $this->dispatch('toast', type: 'success', message: 'Perawatan berhasil disimpan');
+        $this->dispatch('toast', type: 'success', message: 'Data perawatan berhasil disimpan');
         $this->closeModal();
     }
 
@@ -287,7 +288,7 @@ class PerawatanAlat extends Component
             $perawatan->delete();
         });
 
-        $this->dispatch('toast', type: 'success', message: 'Perawatan berhasil dihapus');
+        $this->dispatch('toast', type: 'success', message: 'Data perawatan berhasil dihapus');
     }
 
     #[Layout('layouts.app')]

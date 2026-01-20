@@ -8,6 +8,7 @@ use App\Models\Pengadaan;
 use App\Models\Alat;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
+use App\Livewire\Services\Export\PengadaanExcel;
 
 class PengadaanAlat extends Component
 {
@@ -17,6 +18,15 @@ class PengadaanAlat extends Component
 
     public $columns = ['No', 'Tanggal', 'Alat', 'Vendor', 'Jumlah', 'Harga'];
     public $rows = [];
+
+    public $exportMode = 'preset';
+    public $periode = 'tahun';
+    public $tahun;
+    public $bulan;
+    public $minggu;
+
+    public $tanggalMulai;
+    public $tanggalSelesai;
 
     public $totalAlat;
     public $totalNilaiAlat;
@@ -41,7 +51,30 @@ class PengadaanAlat extends Component
 
     public function mount()
     {
+        $this->tahun = now()->year;
+        $this->bulan = now()->month;
+        $this->minggu = 1;
+        $this->tanggalMulai = now()->startOfMonth()->toDateString();
+        $this->tanggalSelesai = now()->toDateString();
         $this->tanggal = now()->format('Y-m-d');
+    }
+    public function exportExcel()
+    {
+        $excel = new PengadaanExcel();
+
+        if ($this->exportMode === 'custom') {
+            return $excel->exportByDateRange(
+                $this->tanggalMulai,
+                $this->tanggalSelesai
+            );
+        }
+
+        return $excel->exportPengadaan(
+            $this->periode,
+            $this->tahun,
+            $this->bulan,
+            $this->minggu
+        );
     }
 
     public function searchData()
@@ -59,7 +92,7 @@ class PengadaanAlat extends Component
         $query = Pengadaan::query()
             ->when($this->search, function ($q) {
                 $q->where('nama_alat', 'like', '%' . $this->search . '%')
-                  ->orWhere('vendor', 'like', '%' . $this->search . '%');
+                    ->orWhere('vendor', 'like', '%' . $this->search . '%');
             })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(10);
@@ -77,7 +110,9 @@ class PengadaanAlat extends Component
         });
 
         $this->totalAlat = Alat::sum('jumlah_alat');
-        $this->totalNilaiAlat = Alat::sum('harga');
+        $this->totalNilaiAlat = Alat::get()->sum(function ($alat) {
+            return $alat->jumlah_alat * $alat->harga;
+        });
         $this->rataRataHarga = Alat::avg('harga');
 
         return $query;
@@ -87,8 +122,8 @@ class PengadaanAlat extends Component
     {
         $this->sortDirection =
             $this->sortField === $field && $this->sortDirection === 'asc'
-                ? 'desc'
-                : 'asc';
+            ? 'desc'
+            : 'asc';
 
         $this->sortField = $field;
     }
@@ -154,7 +189,7 @@ class PengadaanAlat extends Component
         $this->dispatch(
             'toast',
             type: 'success',
-            message: 'Pengadaan alat berhasil dihapus'
+            message: 'Data Pengadaan alat berhasil dihapus'
         );
     }
 

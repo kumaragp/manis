@@ -8,7 +8,7 @@
 
 @php
     $role = Auth::user()->role ?? 'karyawan';
-    $bgColor = 'bg-[#746447]';  // warna khusus karyawan
+    $bgColor = 'bg-[#746447]';
 @endphp
 
 @if($title)

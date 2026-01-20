@@ -9,6 +9,7 @@ use App\Models\Alat;
 use App\Models\Penjualan;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
+use App\Livewire\Services\Export\PenjualanExcel;
 
 class PenjualanAlat extends Component
 {
@@ -17,6 +18,14 @@ class PenjualanAlat extends Component
     protected $paginationTheme = 'tailwind';
     public $columns = ['No', 'Tanggal', 'Alat', 'Jumlah', 'Harga'];
     public $rows = [];
+
+    public $exportMode = 'preset';
+    public $periode = 'tahun';
+    public $tahun;
+    public $bulan;
+    public $minggu;
+    public $tanggalMulai;
+    public $tanggalSelesai;
 
     public $totalAlat;
     public $totalPenjualan;
@@ -47,10 +56,34 @@ class PenjualanAlat extends Component
 
     public function mount()
     {
+        $this->tahun = now()->year;
+        $this->bulan = now()->month;
+        $this->minggu = 1;
         $this->tanggal = now()->format('Y-m-d');
+        $this->tanggalMulai = now()->startOfMonth()->toDateString();
+        $this->tanggalSelesai = now()->toDateString();
         $this->loadAlat();
     }
 
+    public function exportExcel()
+    {
+        $excel = new PenjualanExcel();
+
+        if ($this->exportMode === 'custom') {
+            return $excel->exportByDateRange(
+                $this->tanggalMulai,
+                $this->tanggalSelesai
+            );
+        }
+
+        return $excel->exportPenjualan(
+            $this->periode,
+            $this->tahun,
+            $this->bulan,
+            $this->minggu
+        );
+    }
+    
     public function searchData()
     {
         $this->resetPage();
@@ -202,7 +235,7 @@ class PenjualanAlat extends Component
         $this->dispatch(
             'toast',
             type: 'success',
-            message: 'Log penjualan berhasil ditambahkan'
+            message: 'Data penjualan berhasil ditambahkan'
         );
 
         $this->closeModal();
@@ -216,7 +249,7 @@ class PenjualanAlat extends Component
         $this->dispatch(
             'toast',
             type: 'success',
-            message: 'Log penjualan berhasil dihapus'
+            message: 'Data penjualan berhasil dihapus'
         );
     }
 

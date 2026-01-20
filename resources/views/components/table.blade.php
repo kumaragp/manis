@@ -21,7 +21,7 @@
 
 <!-- Tabel -->
 <div class="{{ $bgTable }} p-2 sm:p-6 rounded-2xl shadow-2xl max-w-full">
-    <div class="relative overflow-x-auto w-full">
+    <div class="relative overflow-x-auto w-full scrollbar-visible">
         <table class="min-w-max w-full text-center {{ $textColor }} border-collapse table-auto whitespace-nowrap">
             <thead>
                 <tr class="uppercase text-sm font-bold tracking-wide cursor-pointer">
@@ -86,6 +86,7 @@
             </tbody>
         </table>
     </div>
+
 
     <!-- Pagination -->
     @if($pagination)

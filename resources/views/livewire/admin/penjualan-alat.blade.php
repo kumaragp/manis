@@ -25,16 +25,20 @@
                         placeholder="Cari nama alat..." class="w-full pr-10 px-4 py-2 rounded-lg border
                   focus:outline-none focus:ring-2 focus:ring-blue-500" />
 
-                    <i class="fa-solid fa-magnifying-glass
-       absolute right-3 top-1/2 -translate-y-1/2
-       text-gray-400 pointer-events-none"></i>
+                    <i
+                        class="fa-solid fa-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+
                 </div>
 
 
                 <div class="flex-1"></div>
 
                 <div class="flex items-center gap-2">
-                    <x-action-button label="Urutkan" icon="fa-sort" wire:click="sortBy('created_at')" />
+
+                    <x-export-laporan :periode="$periode" :tahun="$tahun" :bulan="$bulan" :minggu="$minggu" :exportMode="$exportMode" />
+
+                    <x-action-button :label="$sortDirection === 'desc' ? 'Terbaru' : 'Terlama'" icon="fa-sort"
+                        wire:click="sortBy('created_at')" />
                     <x-action-button label="Penjualan Alat" icon="fa-plus" wire:click="openModal" />
                 </div>
             </div>
@@ -55,7 +59,7 @@
             <x-select-field label="Alat" wire:model="alat_id" wire:change="pilihAlat" :options="$alatList" />
             <x-input-field label="Jumlah" type="number" min="1" :max="$stok_tersedia" wire:model.live="jumlah" />
             <x-input-field label="Harga" type="number" readonly wire:model="harga_total" />
-            <x-input-field label="Gambar" name="gambar" type="file" wire:model="gambar" />
+            <x-input-field label="Nota Penjualan" name="gambar" type="file" wire:model="gambar" />
             <x-input-field label="Tanggal Penjualan" type="date" wire:model.defer="tanggal" />
             <div class="mt-6 flex justify-end space-x-3">
                 <button type="button" wire:click="closeModal"

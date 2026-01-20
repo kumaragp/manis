@@ -10,7 +10,7 @@
                 <x-stat-card title="Total Alat" value="{{ $totalAlat ?? 0 }}" unit="Unit" icon="fa-screwdriver-wrench"
                     bg="bg-purple-700" />
 
-                <x-stat-card title="Total Penjualan" value="Rp. {{ number_format($totalNilaiAlat?? 0, 0, ',', '.') }}"
+                <x-stat-card title="Total Pengeluaran" value="Rp. {{ number_format($totalNilaiAlat ?? 0, 0, ',', '.') }}"
                     icon="fa-money-bill" bg="bg-green-700" />
 
                 <x-stat-card title="Rata-rata Harga" value="Rp. {{ number_format($rataRataHarga ?? 0, 0, ',', '.') }}"
@@ -33,7 +33,11 @@
                 <div class="flex-1"></div>
 
                 <div class="flex items-center gap-2">
-                    <x-action-button label="Urutkan" icon="fa-sort" wire:click="sortBy('created_at')" />
+                    <x-export-laporan :periode="$periode" :tahun="$tahun" :bulan="$bulan" :minggu="$minggu" :exportMode="$exportMode" />
+                    <div class="flex items-center gap-2">
+                    <x-action-button :label="$sortDirection === 'desc' ? 'Terbaru' : 'Terlama'" icon="fa-sort"
+                        wire:click="sortBy('created_at')" />
+                </div>
                     <x-action-button label="Pengadaan Alat" icon="fa-plus" wire:click="openModal" />
                 </div>
             </div>

@@ -64,7 +64,6 @@
         "{{ asset('images/bg3.webp') }}"
     ];
 
-    // PRELOAD
     images.forEach(src => {
         const img = new Image();
         img.src = src;
